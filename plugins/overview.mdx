@@ -113,7 +113,7 @@ return {
 
 <Steps>
 
-### Bootstrap lazy.nvim
+<Step title="Bootstrap lazy.nvim">
 
 The `lazy.lua` file checks if lazy.nvim is installed and clones it if not:
 
@@ -132,7 +132,9 @@ vim.opt.rtp:prepend(lazypath)
 
 Location: `lua/leyland/lazy.lua:1-12`
 
-### Import Plugin Modules
+</Step>
+
+<Step title="Import Plugin Modules">
 
 lazy.nvim loads all plugin specifications from the configured directories:
 
@@ -153,13 +155,19 @@ require("lazy").setup({
 
 Location: `lua/leyland/lazy.lua:14-22`
 
-### Load Plugin Specs
+</Step>
+
+<Step title="Load Plugin Specs">
 
 Each Lua file in the `plugins/` directory returns a plugin specification table that lazy.nvim processes.
 
-### Initialize Plugins
+</Step>
+
+<Step title="Initialize Plugins">
 
 Plugins are initialized based on their loading strategy (eager, lazy, event-based, etc.).
+
+</Step>
 
 </Steps>
 
@@ -221,11 +229,13 @@ To add a new plugin:
 
 <Steps>
 
-### Create or choose a plugin file
+<Step title="Create or choose a plugin file">
 
 For general plugins, add to an existing file or create a new one in `lua/leyland/plugins/`.
 
-### Define the plugin specification
+</Step>
+
+<Step title="Define the plugin specification">
 
 ```lua
 return {
@@ -240,9 +250,13 @@ return {
 }
 ```
 
-### Restart Neovim
+</Step>
+
+<Step title="Restart Neovim">
 
 lazy.nvim will automatically detect and install the new plugin.
+
+</Step>
 
 </Steps>
 

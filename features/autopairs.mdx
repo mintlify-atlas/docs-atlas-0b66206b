@@ -54,29 +54,27 @@ TreeSitter integration means the plugin understands your code context. For examp
 Auto-pairs works automatically without any additional configuration:
 
 <Steps>
+  <Step title="Enter Insert Mode">
+    Press `i`, `a`, `o`, or any insert mode command.
+  </Step>
 
-### Enter Insert Mode
+  <Step title="Type Opening Character">
+    Type an opening bracket, quote, or parenthesis:
 
-Press `i`, `a`, `o`, or any insert mode command.
+    ```lua
+    function myFunc(
+    ```
 
-### Type Opening Character
+    The closing `)` is automatically inserted:
 
-Type an opening bracket, quote, or parenthesis:
+    ```lua
+    function myFunc()  -- cursor is between the parentheses
+    ```
+  </Step>
 
-```lua
-function myFunc(
-```
-
-The closing `)` is automatically inserted:
-
-```lua
-function myFunc()  -- cursor is between the parentheses
-```
-
-### Continue Typing
-
-The cursor is positioned between the paired characters for immediate typing.
-
+  <Step title="Continue Typing">
+    The cursor is positioned between the paired characters for immediate typing.
+  </Step>
 </Steps>
 
 ## Integration with Completion

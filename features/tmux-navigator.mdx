@@ -80,13 +80,17 @@ bind-key -T copy-mode-vi 'C-l' select-pane -R
 bind-key -T copy-mode-vi 'C-\' select-pane -l
 ```
 
+## Setting Up Tmux
+
 <Steps>
 
-### Add Configuration to Tmux
+<Step title="Add Configuration to Tmux">
 
 Copy the configuration above to your `~/.tmux.conf` file.
 
-### Reload Tmux Configuration
+</Step>
+
+<Step title="Reload Tmux Configuration">
 
 Reload your Tmux configuration:
 
@@ -100,9 +104,13 @@ Or press `<prefix> + :` and type:
 source-file ~/.tmux.conf
 ```
 
-### Test Navigation
+</Step>
+
+<Step title="Test Navigation">
 
 Open Neovim in a Tmux pane, create some splits, and test the navigation keys.
+
+</Step>
 
 </Steps>
 
@@ -112,7 +120,7 @@ Open Neovim in a Tmux pane, create some splits, and test the navigation keys.
 
 <Steps>
 
-### Create Tmux Panes
+<Step title="Create Tmux Panes">
 
 Start Tmux and create multiple panes:
 
@@ -122,7 +130,9 @@ tmux
 # Press <prefix> + " to split horizontally
 ```
 
-### Open Neovim in One Pane
+</Step>
+
+<Step title="Open Neovim in One Pane">
 
 In one of the panes, open Neovim:
 
@@ -130,20 +140,26 @@ In one of the panes, open Neovim:
 nvim
 ```
 
-### Create Neovim Splits
+</Step>
+
+<Step title="Create Neovim Splits">
 
 Inside Neovim, create splits:
 
 - Press `<leader>|` to split vertically (Space + |)
 - Press `<leader>sh` to split horizontally (Space + sh)
 
-### Navigate Seamlessly
+</Step>
+
+<Step title="Navigate Seamlessly">
 
 Use `<C-h>`, `<C-j>`, `<C-k>`, `<C-l>` to move between all splits and panes:
 
 - `<C-h>` moves left through Neovim splits, then to Tmux panes
 - `<C-l>` moves right through Neovim splits, then to Tmux panes
 - Works in all directions!
+
+</Step>
 
 </Steps>
 

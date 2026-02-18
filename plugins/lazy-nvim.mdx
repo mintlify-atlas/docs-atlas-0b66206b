@@ -553,7 +553,7 @@ telescope.nvim         8.7ms
 
 <Steps>
 
-### Check if installed
+<Step title="Check if installed">
 
 ```vim
 :Lazy
@@ -561,19 +561,25 @@ telescope.nvim         8.7ms
 
 Look for the plugin in the list.
 
-### Verify loading strategy
+</Step>
+
+<Step title="Verify loading strategy">
 
 If using lazy loading, ensure the trigger condition is met:
 - Event has fired
 - Command has been called
 - Keymap has been pressed
 
-### Check for errors
+</Step>
+
+<Step title="Check for errors">
 
 ```vim
 :Lazy log
 :messages
 ```
+
+</Step>
 
 </Steps>
 
@@ -589,23 +595,31 @@ If using lazy loading, ensure the trigger condition is met:
 
 <Steps>
 
-### Profile startup
+<Step title="Profile startup">
 
 ```vim
 :Lazy profile
 ```
 
-### Identify slow plugins
+</Step>
+
+<Step title="Identify slow plugins">
 
 Look for plugins taking >20ms.
 
-### Add lazy loading
+</Step>
+
+<Step title="Add lazy loading">
 
 Add `event`, `cmd`, or `keys` to slow plugins.
 
-### Restart and re-profile
+</Step>
+
+<Step title="Restart and re-profile">
 
 Verify improvements.
+
+</Step>
 
 </Steps>
 

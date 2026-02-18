@@ -86,21 +86,29 @@ Once Diffview is open, use these keybindings:
 
 <Steps>
 
-### Open Diffview
+<Step title="Open Diffview">
 
 Press `<leader>dd` to open a diff view of all your uncommitted changes.
 
-### Navigate Files
+</Step>
+
+<Step title="Navigate Files">
 
 Use `j/k` in the file panel to navigate through modified files.
 
-### Review Changes
+</Step>
+
+<Step title="Review Changes">
 
 Press `<CR>` on a file to view its diff in the main panel.
 
-### Close When Done
+</Step>
+
+<Step title="Close When Done">
 
 Press `<leader>df` to close the diff view.
+
+</Step>
 
 </Steps>
 
@@ -108,17 +116,23 @@ Press `<leader>df` to close the diff view.
 
 <Steps>
 
-### Quick Branch Compare
+<Step title="Quick Branch Compare">
 
 Press `<leader>ds` to compare your current branch with `origin/main`.
 
-### Custom Branch Compare
+</Step>
+
+<Step title="Custom Branch Compare">
 
 Use `:DiffviewOpen branch1...branch2` to compare any two branches.
 
-### Review Differences
+</Step>
+
+<Step title="Review Differences">
 
 Navigate through files to see all changes between the branches.
+
+</Step>
 
 </Steps>
 
@@ -126,15 +140,19 @@ Navigate through files to see all changes between the branches.
 
 <Steps>
 
-### Open Conflict View
+<Step title="Open Conflict View">
 
 After a merge conflict, run `:DiffviewOpen` to see the 3-way merge interface.
 
-### Navigate Conflicts
+</Step>
+
+<Step title="Navigate Conflicts">
 
 Use `]x` and `[x` to jump between conflict markers in different files.
 
-### Choose Resolution
+</Step>
+
+<Step title="Choose Resolution">
 
 Use the conflict resolution keybindings:
 - `<leader>co` - Accept current branch changes (OURS)
@@ -142,9 +160,13 @@ Use the conflict resolution keybindings:
 - `<leader>cb` - Accept base version
 - `<leader>ca` - Keep both changes
 
-### Save and Close
+</Step>
+
+<Step title="Save and Close">
 
 Save the file (`:w`) and close the diff view when all conflicts are resolved.
+
+</Step>
 
 </Steps>
 
@@ -241,23 +263,31 @@ Open the file history view.
 
 <Steps>
 
-### Open File History
+<Step title="Open File History">
 
 ```vim
 :DiffviewFileHistory path/to/buggy/file.lua
 ```
 
-### Navigate Commits
+</Step>
+
+<Step title="Navigate Commits">
 
 Use `j/k` to browse through commits in the file panel.
 
-### View Each Commit
+</Step>
+
+<Step title="View Each Commit">
 
 Press `<CR>` on each commit to see what changed.
 
-### Identify the Culprit
+</Step>
+
+<Step title="Identify the Culprit">
 
 Find the commit that introduced the problematic code.
+
+</Step>
 
 </Steps>
 
@@ -267,21 +297,29 @@ While Diffview is primarily for viewing, you can use it with Neogit:
 
 <Steps>
 
-### Open Neogit
+<Step title="Open Neogit">
 
 Press `<leader>gg` to open Neogit.
 
-### View Diff
+</Step>
+
+<Step title="View Diff">
 
 Press `d` on a file to open it in Diffview.
 
-### Review Changes
+</Step>
+
+<Step title="Review Changes">
 
 Use Diffview's interface to thoroughly review changes.
 
-### Stage in Neogit
+</Step>
+
+<Step title="Stage in Neogit">
 
 Return to Neogit and stage the files you've reviewed.
+
+</Step>
 
 </Steps>
 

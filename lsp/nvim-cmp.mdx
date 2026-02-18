@@ -118,11 +118,11 @@ Completion keybindings defined in `lua/leyland/plugins/nvim-cmp.lua:34-51`:
   ```
 </ParamField>
 
-<ParamField path="Tab" type="normal">
+<ParamField path="<leader>tn" type="normal">
   Navigate to next item or jump to next snippet placeholder
   
   ```lua
-  ["<Tab>"] = cmp.mapping(function(fallback)
+  ["<leader>tn"] = cmp.mapping(function(fallback)
     if cmp.visible() then
       cmp.select_next_item()
     elseif luasnip.expand_or_jumpable() then
@@ -136,7 +136,7 @@ Completion keybindings defined in `lua/leyland/plugins/nvim-cmp.lua:34-51`:
   **Smart behavior:**
   - If completion menu is visible: select next item
   - If in a snippet: jump to next placeholder
-  - Otherwise: insert tab character
+  - Otherwise: insert normal character
 </ParamField>
 
 ### Documentation
@@ -245,7 +245,7 @@ This loads snippets from the `friendly-snippets` plugin, which includes:
 </CardGroup>
 
 <Tip>
-Press `<Tab>` to expand snippets and jump between placeholders. The Tab key intelligently handles both completion navigation and snippet jumping.
+Press `<leader>tn` to expand snippets and jump between placeholders.
 </Tip>
 
 ## Visual Formatting
@@ -396,11 +396,11 @@ The nvim-cmp setup requires several plugins:
   </Step>
   
   <Step title="Expand snippet">
-    Select it and press `<CR>` or `<Tab>`.
+    Select it and press `<CR>` or `<leader>tn`.
   </Step>
   
   <Step title="Navigate placeholders">
-    Press `<Tab>` to jump between fields.
+    Press `<leader>tn` to jump between fields.
   </Step>
 </Steps>
 
@@ -542,17 +542,17 @@ Changing keybindings may conflict with other plugins or Neovim defaults. Test th
     - Ensure `cmp_luasnip` is in dependencies
   </Accordion>
   
-  <Accordion title="Tab key not working" icon="keyboard">
+  <Accordion title="Navigation key not working" icon="keyboard">
     **Possible causes:**
     
     1. Conflicting keybindings
-    2. Tab mapping not configured
-    3. Another plugin intercepting Tab
+    2. Key mapping not configured
+    3. Another plugin intercepting keys
     
     **Solutions:**
     
     - Check for keybinding conflicts
-    - Verify Tab mapping in config
+    - Verify key mapping in config
     - Try alternative keys: `<C-j>` for navigation
   </Accordion>
   

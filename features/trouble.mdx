@@ -56,11 +56,13 @@ The default leader key is `Space`, so press `Space` + `x` + `x` to toggle Troubl
 
 <Steps>
 
-### Open Trouble Window
+<Step title="Open Trouble Window">
 
 Press `<leader>xx` (Space + x + x) to open the Trouble diagnostics window.
 
-### View Diagnostics
+</Step>
+
+<Step title="View Diagnostics">
 
 The window displays all diagnostics from your current workspace:
 
@@ -73,17 +75,23 @@ The window displays all diagnostics from your current workspace:
   ⚠️  warning: unused variable 'bar'
      lua/myfile.lua:23:10
   
-  💡 hint: consider using const instead
-     src/app.js:42:3
+   💡 hint: consider using const instead
+      src/app.js:42:3
 ```
 
-### Navigate to Issue
+</Step>
+
+<Step title="Navigate to Issue">
 
 With the cursor on a diagnostic line, press `<Enter>` to jump directly to that location in your code.
 
-### Close Trouble
+</Step>
+
+<Step title="Close Trouble">
 
 Press `<leader>xx` again or `q` to close the Trouble window.
+
+</Step>
 
 </Steps>
 
@@ -94,7 +102,7 @@ When the Trouble window is open, you can use these commands:
 | Key | Action |
 |-----|--------|
 | `<Enter>` | Jump to the diagnostic location |
-| `<Tab>` | Jump to location but keep focus on Trouble |
+| `<leader>t` | Jump to location but keep focus on Trouble |
 | `q` | Close the Trouble window |
 | `o` | Jump to location and close Trouble |
 | `<Esc>` | Cancel and close |
