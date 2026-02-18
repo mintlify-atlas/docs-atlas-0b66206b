@@ -1,0 +1,265 @@
+---
+title: Colorschemes
+description: Available themes and colorscheme configuration in nvim-luffy
+icon: palette
+---
+
+## Overview
+
+nvim-luffy comes pre-configured with 6 beautiful colorschemes, giving you flexibility to match your aesthetic preferences. All themes are loaded with high priority to ensure consistent appearance from startup.
+
+<Note>
+  The default colorscheme is **bamboo**. You can easily switch between themes by editing the config.
+</Note>
+
+## Available Themes
+
+<CardGroup cols={2}>
+  <Card title="Catppuccin" icon="mug-hot">
+    Soothing pastel theme with four flavor variants
+  </Card>
+  
+  <Card title="Tokyo Night" icon="moon">
+    Clean, dark theme inspired by Tokyo's night scenery
+  </Card>
+  
+  <Card title="Modus Themes" icon="sun">
+    Highly accessible themes designed for comfortable, long-term reading
+  </Card>
+  
+  <Card title="Bamboo" icon="leaf">
+    Warm, nature-inspired theme (default)
+  </Card>
+  
+  <Card title="OneDark" icon="circle-half-stroke">
+    Classic Atom One Dark theme with multiple style variants
+  </Card>
+  
+  <Card title="Rose Pine" icon="seedling">
+    All natural pine, faux fur and a bit of soho vibes
+  </Card>
+</CardGroup>
+
+## Configuration
+
+The colorscheme configuration is located at:
+
+```
+lua/leyland/plugins/colorscheme.lua
+```
+
+### Full Configuration
+
+```lua
+-- Install multiple themes
+return {
+	{
+		"catppuccin/nvim",
+		name = "catppuccin",
+		priority = 1000,
+	},
+	{
+		"folke/tokyonight.nvim",
+		priority = 1000,
+	},
+	{
+		"miikanissi/modus-themes.nvim",
+		priority = 1000,
+	},
+	{
+		"ribru17/bamboo.nvim",
+		lazy = false,
+		priority = 1000,
+	},
+	{
+		"navarasu/onedark.nvim",
+		priority = 1000,
+	},
+	{
+		"rose-pine/neovim",
+		name = "rose-pine",
+		priority = 1000,
+		config = function()
+			-- Set your default theme here
+			vim.cmd.colorscheme("bamboo")
+		end,
+	},
+}
+```
+
+See `lua/leyland/plugins/colorscheme.lua:37`
+
+## Switching Themes
+
+<Tabs>
+  <Tab title="Permanent Change">
+    To change your default colorscheme permanently, edit the config function in `colorscheme.lua`:
+
+    ```lua
+    config = function()
+      -- Change "bamboo" to any of the installed themes
+      vim.cmd.colorscheme("bamboo")
+    end,
+    ```
+
+    Available options:
+    - `"catppuccin"`
+    - `"tokyonight"`
+    - `"modus_operandi"` or `"modus_vivendi"`
+    - `"bamboo"`
+    - `"onedark"`
+    - `"rose-pine"`
+  </Tab>
+
+  <Tab title="Runtime Change">
+    You can switch themes at runtime using the `:colorscheme` command:
+
+    ```vim
+    :colorscheme tokyonight
+    :colorscheme catppuccin
+    :colorscheme rose-pine
+    ```
+
+    This change is temporary and will revert to your configured default on restart.
+  </Tab>
+
+  <Tab title="Telescope Picker">
+    Use Telescope to preview and select colorschemes interactively:
+
+    ```vim
+    :Telescope colorscheme
+    ```
+
+    Press `Enter` to apply the selected theme.
+  </Tab>
+</Tabs>
+
+## Theme-Specific Configuration
+
+### OneDark Style Variants
+
+OneDark supports multiple style variants. Uncomment and configure in `colorscheme.lua`:
+
+```lua
+{
+  "navarasu/onedark.nvim",
+  priority = 1000,
+  config = function()
+    require("onedark").setup({
+      style = "deep", -- Options: dark, darker, cool, deep, warm, warmer
+    })
+    require("onedark").load()
+  end,
+}
+```
+
+### Catppuccin Flavors
+
+Catppuccin offers four distinct flavors:
+
+```lua
+{
+  "catppuccin/nvim",
+  name = "catppuccin",
+  priority = 1000,
+  opts = {
+    flavour = "mocha", -- Options: latte, frappe, macchiato, mocha
+  },
+}
+```
+
+### Tokyo Night Variants
+
+Tokyo Night provides multiple variants:
+
+```lua
+{
+  "folke/tokyonight.nvim",
+  priority = 1000,
+  opts = {
+    style = "storm", -- Options: storm, moon, night, day
+  },
+}
+```
+
+## Plugin Loading
+
+<Note>
+  All colorscheme plugins are set with `priority = 1000` to ensure they load before other UI plugins. The bamboo theme additionally has `lazy = false` to guarantee immediate availability.
+</Note>
+
+### Priority System
+
+The `priority` field ensures colorschemes load first:
+
+```lua
+priority = 1000, -- Load before all other start plugins
+```
+
+Higher priority values load earlier. This prevents UI flashing and ensures consistent syntax highlighting from startup.
+
+### Lazy Loading
+
+Most themes can be lazy-loaded, but the active theme should have `lazy = false`:
+
+```lua
+{
+  "ribru17/bamboo.nvim",
+  lazy = false,     -- Load immediately
+  priority = 1000,  -- Load first
+}
+```
+
+## Troubleshooting
+
+### Theme Not Applying
+
+If your theme isn't applying:
+
+1. Verify the colorscheme name matches the plugin's expected value
+2. Ensure the config function is in the correct plugin definition
+3. Check that `lazy = false` is set for your active theme
+4. Try `:Lazy sync` to reinstall plugins
+
+### Colors Look Wrong
+
+- Ensure your terminal supports true colors:
+  ```lua
+  vim.opt.termguicolors = true
+  ```
+- Check your terminal emulator's color settings
+- Some themes require specific terminal configurations
+
+### Multiple Theme Config Functions
+
+<Note>
+  Only one plugin should contain the `vim.cmd.colorscheme()` call in its config function. The example configuration places it in the rose-pine plugin as the last theme loaded.
+</Note>
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Catppuccin" icon="github" href="https://github.com/catppuccin/nvim">
+    View documentation and variants
+  </Card>
+  
+  <Card title="Tokyo Night" icon="github" href="https://github.com/folke/tokyonight.nvim">
+    Explore style options
+  </Card>
+  
+  <Card title="Modus Themes" icon="github" href="https://github.com/miikanissi/modus-themes.nvim">
+    Accessibility-focused themes
+  </Card>
+  
+  <Card title="Bamboo" icon="github" href="https://github.com/ribru17/bamboo.nvim">
+    Warm, nature-inspired palette
+  </Card>
+  
+  <Card title="OneDark" icon="github" href="https://github.com/navarasu/onedark.nvim">
+    Classic Atom-inspired theme
+  </Card>
+  
+  <Card title="Rose Pine" icon="github" href="https://github.com/rose-pine/neovim">
+    Soho vibes with natural tones
+  </Card>
+</CardGroup>

@@ -1,0 +1,373 @@
+---
+title: Alpha Dashboard
+description: Startup dashboard configuration with custom ASCII art and quick actions
+icon: house
+---
+
+## Overview
+
+The Alpha dashboard provides a beautiful welcome screen when you launch Neovim. It features custom ASCII art (Luffy from One Piece), quick action buttons, and an inspirational quote.
+
+<Note>
+  The dashboard automatically appears when opening Neovim without arguments. Open a file directly to bypass it.
+</Note>
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Custom ASCII Art" icon="image">
+    Beautiful Luffy ASCII art displayed on startup
+  </Card>
+  
+  <Card title="Quick Actions" icon="bolt">
+    Fast access to common operations via keyboard shortcuts
+  </Card>
+  
+  <Card title="Recent Files" icon="clock-rotate-left">
+    Quick access to recently opened files
+  </Card>
+  
+  <Card title="Custom Footer" icon="quote-left">
+    Motivational quote to start your coding session
+  </Card>
+</CardGroup>
+
+## Configuration
+
+The Alpha dashboard is configured in:
+
+```
+lua/leyland/plugins/alpha.lua
+```
+
+### Plugin Setup
+
+```lua
+return {
+  "goolord/alpha-nvim",
+  event = "VimEnter",
+  config = function()
+    local alpha = require("alpha")
+    local dashboard = require("alpha.themes.dashboard")
+    
+    -- Configuration goes here
+  end,
+}
+```
+
+See `lua/leyland/plugins/alpha.lua:1-4`
+
+## Dashboard Sections
+
+### Header (ASCII Art)
+
+The header displays custom ASCII art of Luffy:
+
+```lua
+dashboard.section.header.val = {
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⠶⠶⠶⠶⠤⠤⠤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠔⠊⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠛⠷⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+  -- ... more lines
+}
+```
+
+See `lua/leyland/plugins/alpha.lua:8-42`
+
+<Note>
+  The ASCII art is 42 lines tall and optimally sized for most terminal displays. It uses Unicode box-drawing characters for smooth rendering.
+</Note>
+
+### Button Actions
+
+Three quick-action buttons provide instant access to common operations:
+
+```lua
+dashboard.section.buttons.val = {
+  dashboard.button("f", "  Find file", ":Telescope find_files <CR>"),
+  dashboard.button("r", "  Recent files", ":Telescope oldfiles <CR>"),
+  dashboard.button("q", "  Quit", ":qa<CR>"),
+}
+```
+
+See `lua/leyland/plugins/alpha.lua:44-48`
+
+<Tabs>
+  <Tab title="Find File (f)">
+    Press `f` to open Telescope's file finder.
+
+    Searches all files in your project directory using fuzzy matching.
+
+    **Command:** `:Telescope find_files`
+  </Tab>
+
+  <Tab title="Recent Files (r)">
+    Press `r` to view recently opened files.
+
+    Quick access to your editing history for fast context switching.
+
+    **Command:** `:Telescope oldfiles`
+  </Tab>
+
+  <Tab title="Quit (q)">
+    Press `q` to exit Neovim.
+
+    Closes all buffers and quits the editor.
+
+    **Command:** `:qa`
+  </Tab>
+</Tabs>
+
+### Footer Quote
+
+The footer displays an inspirational One Piece-themed quote:
+
+```lua
+dashboard.section.footer.val = {
+  "",
+  '"Maybe the One Piece was the commits you made along the way."',
+  "",
+}
+```
+
+See `lua/leyland/plugins/alpha.lua:49-53`
+
+The footer uses the `Comment` highlight group for subtle styling:
+
+```lua
+dashboard.section.footer.opts.hl = "Comment"
+```
+
+## Layout Configuration
+
+The dashboard layout controls spacing and section order:
+
+```lua
+dashboard.config.layout = {
+  { type = "padding", val = 2 },
+  dashboard.section.header,
+  { type = "padding", val = 2 },
+  dashboard.section.footer, -- Quote positioned here
+  { type = "padding", val = 2 },
+  dashboard.section.buttons,
+  { type = "padding", val = 1 },
+}
+```
+
+See `lua/leyland/plugins/alpha.lua:54-62`
+
+### Layout Structure
+
+1. **Top padding** (2 lines) - Space from terminal top
+2. **Header** - ASCII art
+3. **Padding** (2 lines) - Space between header and quote
+4. **Footer** - Inspirational quote
+5. **Padding** (2 lines) - Space between quote and buttons
+6. **Buttons** - Quick action menu
+7. **Bottom padding** (1 line) - Space before cursor
+
+<Note>
+  The quote is positioned between the header and buttons for optimal visual hierarchy. Adjust padding values to customize spacing.
+</Note>
+
+## Special Settings
+
+### Disable Folding
+
+Folding is disabled on the Alpha buffer to prevent accidentally folding the ASCII art:
+
+```lua
+vim.cmd([[autocmd FileType alpha setlocal nofoldenable]])
+```
+
+See `lua/leyland/plugins/alpha.lua:67`
+
+### Event Loading
+
+The plugin loads on `VimEnter` to display immediately after Neovim initialization:
+
+```lua
+event = "VimEnter",
+```
+
+## Customization
+
+### Changing the ASCII Art
+
+Replace the header array with your own ASCII art:
+
+```lua
+dashboard.section.header.val = {
+  "  Your ASCII art here  ",
+  " Line by line as array ",
+  "   elements with proper ",
+  "     quote escaping     ",
+}
+```
+
+<Note>
+  Use an ASCII art generator or editor. Remember to escape backslashes (`\\`) and quotes (`\"`). Unicode characters are supported.
+</Note>
+
+### Adding More Buttons
+
+Extend the buttons array with additional actions:
+
+```lua
+dashboard.section.buttons.val = {
+  dashboard.button("f", "  Find file", ":Telescope find_files <CR>"),
+  dashboard.button("r", "  Recent files", ":Telescope oldfiles <CR>"),
+  dashboard.button("n", "  New file", ":ene <BAR> startinsert <CR>"),
+  dashboard.button("g", "  Find text", ":Telescope live_grep <CR>"),
+  dashboard.button("c", "  Config", ":e $MYVIMRC <CR>"),
+  dashboard.button("q", "  Quit", ":qa<CR>"),
+}
+```
+
+**Button syntax:**
+```lua
+dashboard.button(key, label, command)
+```
+
+- `key`: Single character to press
+- `label`: Display text (can include icons)
+- `command`: Vim command to execute
+
+### Custom Footer Messages
+
+Modify the footer with your own quotes:
+
+```lua
+dashboard.section.footer.val = {
+  "",
+  '"Your custom quote here"',
+  "- Attribution",
+  "",
+}
+```
+
+### Dynamic Footer
+
+Generate dynamic content like plugin counts or startup time:
+
+```lua
+dashboard.section.footer.val = function()
+  local stats = require("lazy").stats()
+  return {
+    "",
+    string.format("Loaded %d/%d plugins", stats.loaded, stats.count),
+    "",
+  }
+end
+```
+
+### Color Customization
+
+Change section highlight groups:
+
+```lua
+-- Header in blue
+dashboard.section.header.opts.hl = "Function"
+
+-- Buttons in green  
+dashboard.section.buttons.opts.hl = "String"
+
+-- Footer in gray
+dashboard.section.footer.opts.hl = "Comment"
+```
+
+Available highlight groups: `Function`, `String`, `Comment`, `Keyword`, `Type`, `Special`, etc.
+
+## Usage Tips
+
+### Opening Neovim
+
+<Tabs>
+  <Tab title="Show Dashboard">
+    Launch Neovim without arguments:
+
+    ```bash
+    nvim
+    ```
+
+    The Alpha dashboard appears automatically.
+  </Tab>
+
+  <Tab title="Skip Dashboard">
+    Open a specific file:
+
+    ```bash
+    nvim file.lua
+    ```
+
+    Opens directly to the file, bypassing the dashboard.
+  </Tab>
+
+  <Tab title="Return to Dashboard">
+    Close all buffers from within Neovim:
+
+    ```vim
+    :Alpha
+    ```
+
+    Manually triggers the Alpha dashboard.
+  </Tab>
+</Tabs>
+
+### Keyboard Navigation
+
+- Press the letter key shown on each button
+- Use arrow keys or `j`/`k` to navigate between buttons
+- Press `Enter` on a highlighted button to activate it
+- Press `q` anywhere on the dashboard to quit
+
+## Troubleshooting
+
+### Dashboard Not Appearing
+
+Ensure the plugin is loading on VimEnter:
+
+```lua
+event = "VimEnter",
+```
+
+Check for errors: `:messages`
+
+### ASCII Art Rendering Issues
+
+- Verify your terminal supports Unicode
+- Check terminal font has box-drawing characters
+- Try a Nerd Font for best compatibility
+- Adjust terminal window size if art appears cut off
+
+### Buttons Not Working
+
+Verify Telescope is installed and loaded. The default buttons depend on Telescope for file finding.
+
+### Wrong Colors
+
+Highlight groups depend on your colorscheme. Try different highlight group names or set custom colors:
+
+```lua
+vim.api.nvim_set_hl(0, "AlphaHeader", { fg = "#7aa2f7" })
+dashboard.section.header.opts.hl = "AlphaHeader"
+```
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Alpha Nvim" icon="github" href="https://github.com/goolord/alpha-nvim">
+    Official plugin repository
+  </Card>
+  
+  <Card title="ASCII Art Archive" icon="palette" href="https://www.asciiart.eu/">
+    Find or create custom ASCII art
+  </Card>
+  
+  <Card title="Telescope" icon="telescope" href="https://github.com/nvim-telescope/telescope.nvim">
+    Required for file finding buttons
+  </Card>
+  
+  <Card title="Nerd Fonts" icon="font" href="https://www.nerdfonts.com/">
+    Icon fonts for button labels
+  </Card>
+</CardGroup>

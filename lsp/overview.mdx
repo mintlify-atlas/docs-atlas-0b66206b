@@ -1,0 +1,166 @@
+---
+title: LSP Overview
+description: Overview of Language Server Protocol setup and capabilities in nvim-luffy
+---
+
+# LSP Overview
+
+The Language Server Protocol (LSP) integration in nvim-luffy provides intelligent code completion, diagnostics, navigation, and formatting capabilities across multiple languages.
+
+## Architecture
+
+The LSP configuration is split across several components:
+
+- **LSP Core** (`lua/leyland/lsp.lua`) - Keybindings and diagnostic configuration
+- **LSP Setup** (`lua/leyland/plugins/lsp/lsp.lua`) - LSP capabilities integration with nvim-cmp
+- **Mason** (`lua/leyland/plugins/lsp/mason.lua`) - Automated LSP server installation
+- **nvim-cmp** (`lua/leyland/plugins/nvim-cmp.lua`) - Completion engine
+- **Conform** (`lua/leyland/plugins/formatting.lua`) - Code formatting
+
+## Supported Languages
+
+nvim-luffy comes pre-configured with LSP servers for:
+
+<AccordionGroup>
+  <Accordion title="JavaScript/TypeScript">
+    - **ts_ls** - TypeScript language server
+    - **eslint** - JavaScript/TypeScript linting
+    - **emmet_ls** - Emmet abbreviations
+  </Accordion>
+
+  <Accordion title="Web Development">
+    - **html** - HTML language server
+    - **cssls** - CSS language server
+    - **tailwindcss** - Tailwind CSS IntelliSense
+    - **svelte** - Svelte language server
+    - **graphql** - GraphQL language server
+  </Accordion>
+
+  <Accordion title="Python">
+    - **pyright** - Python type checking and IntelliSense
+  </Accordion>
+
+  <Accordion title="Lua">
+    - **lua_ls** - Lua language server with Neovim API support
+  </Accordion>
+
+  <Accordion title="Databases">
+    - **prismals** - Prisma schema language server
+  </Accordion>
+</AccordionGroup>
+
+## Key Features
+
+### Code Navigation
+
+Navigate your codebase efficiently:
+
+- Go to definitions and declarations
+- Find all references
+- Jump to implementations
+- Explore type definitions
+- Navigate diagnostics
+
+### Code Actions
+
+- Quick fixes for diagnostics
+- Refactoring suggestions
+- Import management
+- Code transformations
+
+### Diagnostics
+
+Real-time error and warning detection with:
+
+- Inline diagnostic messages
+- Severity-based icons
+- Configurable underlines
+- Diagnostic navigation
+
+### Completion
+
+Intelligent autocompletion from multiple sources:
+
+- LSP server suggestions
+- Snippets
+- Buffer text
+- File system paths
+
+### Formatting
+
+Automatic code formatting on save with language-specific formatters.
+
+## Diagnostic Configuration
+
+Diagnostics are configured with custom icons and severity levels:
+
+```lua
+vim.diagnostic.config({
+  underline = {
+    severity = { min = severity.ERROR },
+  },
+  signs = {
+    text = {
+      [severity.ERROR] = " ",
+      [severity.WARN] = " ",
+      [severity.HINT] = "󰠠 ",
+      [severity.INFO] = " ",
+    },
+  },
+})
+```
+
+**Configuration details:**
+
+- Only errors are underlined (warnings and hints are not)
+- Each severity level has a distinct icon
+- Icons appear in the sign column
+
+<Note>
+The diagnostic configuration is defined in `lua/leyland/lsp.lua:59-71`.
+</Note>
+
+## LSP Keybindings
+
+All LSP keybindings are automatically set when an LSP server attaches to a buffer. See the [keybindings reference](/keybindings) for a complete list.
+
+<Tip>
+Use `<leader>rs` to restart the LSP server if you encounter issues.
+</Tip>
+
+## Getting Started
+
+<Steps>
+  <Step title="Installation">
+    LSP servers are automatically installed by Mason when you first open a file of the corresponding type.
+  </Step>
+
+  <Step title="Configuration">
+    The LSP setup is automatically loaded through Lazy.nvim's plugin system.
+  </Step>
+
+  <Step title="Usage">
+    Open any supported file type and LSP features will activate automatically.
+  </Step>
+</Steps>
+
+## Plugins Used
+
+- [neovim/nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) - Quickstart configs for LSP
+- [williamboman/mason.nvim](https://github.com/williamboman/mason.nvim) - Package manager for LSP servers
+- [hrsh7th/nvim-cmp](https://github.com/hrsh7th/nvim-cmp) - Completion engine
+- [stevearc/conform.nvim](https://github.com/stevearc/conform.nvim) - Formatter integration
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Mason Configuration" icon="box" href="/lsp/mason">
+    Learn about LSP server installation and management
+  </Card>
+  <Card title="Completion Setup" icon="sparkles" href="/lsp/nvim-cmp">
+    Configure autocompletion and snippets
+  </Card>
+  <Card title="Formatting" icon="wand-magic-sparkles" href="/lsp/formatting">
+    Set up automatic code formatting
+  </Card>
+</CardGroup>

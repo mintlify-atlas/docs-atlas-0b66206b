@@ -1,0 +1,685 @@
+---
+title: Lazy.nvim Configuration
+description: Deep dive into lazy.nvim plugin manager configuration and usage
+---
+
+# Lazy.nvim Configuration
+
+This guide covers how nvim-luffy uses [lazy.nvim](https://github.com/folke/lazy.nvim) as its plugin manager, including bootstrap process, configuration, and advanced usage.
+
+## Bootstrap Process
+
+The bootstrap process ensures lazy.nvim is installed before any plugins are loaded.
+
+### Installation Check
+
+The configuration first checks if lazy.nvim exists in the data directory:
+
+```lua
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  -- Clone lazy.nvim if not found
+end
+```
+
+Location: `lua/leyland/lazy.lua:1-2`
+
+<Note>
+  `vim.fn.stdpath("data")` typically resolves to:
+  - Linux/MacOS: `~/.local/share/nvim`
+  - Windows: `~/AppData/Local/nvim-data`
+</Note>
+
+### Automatic Installation
+
+If lazy.nvim isn't found, it's automatically cloned from GitHub:
+
+```lua
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
+  })
+end
+```
+
+Location: `lua/leyland/lazy.lua:2-11`
+
+**Key options:**
+- `--filter=blob:none`: Partial clone for faster download
+- `--branch=stable`: Use stable release instead of main branch
+
+### Runtime Path Setup
+
+Add lazy.nvim to Neovim's runtime path before requiring it:
+
+```lua
+vim.opt.rtp:prepend(lazypath)
+```
+
+Location: `lua/leyland/lazy.lua:12`
+
+<Warning>
+  This must happen before `require("lazy")` or Neovim won't be able to find the plugin.
+</Warning>
+
+## Setup Configuration
+
+The main setup call configures lazy.nvim and imports all plugin specifications.
+
+### Plugin Import Structure
+
+```lua
+require("lazy").setup({
+  { import = "leyland.plugins" },
+  { import = "leyland.plugins.lsp" },
+}, {
+  -- Options
+})
+```
+
+Location: `lua/leyland/lazy.lua:14`
+
+This imports plugins from two directories:
+
+1. **`leyland.plugins`**: General plugins (UI, editing, tools)
+2. **`leyland.plugins.lsp`**: LSP-specific plugins
+
+<Tip>
+  lazy.nvim automatically imports all Lua files from these directories, making it easy to organize plugins by category.
+</Tip>
+
+### Options Configuration
+
+#### Update Checker
+
+```lua
+checker = {
+  enabled = true,
+  notify = false,
+}
+```
+
+Location: `lua/leyland/lazy.lua:15-18`
+
+- **`enabled = true`**: Automatically checks for plugin updates
+- **`notify = false`**: Doesn't show notifications when updates are available
+
+<Note>
+  Even with notifications disabled, you can manually check for updates with `:Lazy check`.
+</Note>
+
+#### Change Detection
+
+```lua
+change_detection = {
+  notify = false,
+}
+```
+
+Location: `lua/leyland/lazy.lua:19-21`
+
+When plugin configuration files change, lazy.nvim can automatically reload them. This disables notifications for those changes.
+
+## Plugin Specification Format
+
+Each plugin file returns a table (or array of tables) with plugin specifications.
+
+### Basic Plugin
+
+Simplest form - just install the plugin:
+
+```lua
+return {
+  "nvim-lua/plenary.nvim",
+}
+```
+
+From: `lua/leyland/plugins/init.lua:2`
+
+### Plugin with Options
+
+Common configuration pattern:
+
+```lua
+return {
+  "author/plugin-name",
+  dependencies = { "required/plugin" },
+  event = "BufReadPre",
+  config = function()
+    require("plugin-name").setup({
+      -- options
+    })
+  end,
+}
+```
+
+## Real-World Examples
+
+### Example 1: Multiple Colorschemes
+
+Installing multiple themes with priority loading:
+
+```lua
+return {
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    priority = 1000,
+  },
+  {
+    "folke/tokyonight.nvim",
+    priority = 1000,
+  },
+  {
+    "ribru17/bamboo.nvim",
+    lazy = false,
+    priority = 1000,
+  },
+  {
+    "rose-pine/neovim",
+    name = "rose-pine",
+    priority = 1000,
+    config = function()
+      vim.cmd.colorscheme("bamboo")
+    end,
+  },
+}
+```
+
+From: `lua/leyland/plugins/colorscheme.lua`
+
+**Key points:**
+- **`priority = 1000`**: High priority ensures colorschemes load before other plugins
+- **`lazy = false`**: Force immediate loading (not lazy)
+- **`name`**: Custom name for the plugin (instead of repo name)
+- **`config`**: Function runs after plugin loads, sets default colorscheme
+
+<Warning>
+  Only the last plugin with a `config` function that calls `vim.cmd.colorscheme()` will determine your active theme.
+</Warning>
+
+### Example 2: Treesitter with Build Step
+
+Plugin that requires compilation:
+
+```lua
+return {
+  "nvim-treesitter/nvim-treesitter",
+  branch = "master",
+  event = { "BufReadPre", "BufNewFile" },
+  build = ":TSUpdate",
+  config = function()
+    require("nvim-treesitter").setup({
+      ensure_installed = {
+        "json",
+        "javascript",
+        "typescript",
+        "tsx",
+        "yaml",
+        "html",
+        "css",
+        "prisma",
+        "markdown",
+        "markdown_inline",
+        "svelte",
+        "graphql",
+        "bash",
+        "lua",
+        "vim",
+        "dockerfile",
+        "gitignore",
+        "query",
+        "vimdoc",
+        "c",
+      },
+    })
+    vim.treesitter.language.register("bash", "zsh")
+  end,
+}
+```
+
+From: `lua/leyland/plugins/treesitter.lua`
+
+**Key points:**
+- **`branch = "master"`**: Use specific branch instead of default
+- **`event = { "BufReadPre", "BufNewFile" }`**: Lazy load when opening files
+- **`build = ":TSUpdate"`**: Run command after install/update
+- **`ensure_installed`**: Automatically install these parsers
+- **`language.register`**: Register zsh to use bash parser
+
+<Tip>
+  Using events like `BufReadPre` defers loading until you actually open a file, significantly improving startup time.
+</Tip>
+
+### Example 3: Telescope with Dependencies
+
+Plugin with multiple dependencies and complex configuration:
+
+```lua
+return {
+  "nvim-telescope/telescope.nvim",
+  branch = "0.1.x",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    "nvim-tree/nvim-web-devicons",
+    "folke/todo-comments.nvim",
+  },
+  config = function()
+    local telescope = require("telescope")
+    local actions = require("telescope.actions")
+
+    telescope.setup({
+      defaults = {
+        path_display = { "filename_first" },
+        mappings = {
+          i = {
+            ["<C-k>"] = actions.move_selection_previous,
+            ["<C-j>"] = actions.move_selection_next,
+            ["<C-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
+          },
+        },
+      },
+      pickers = {
+        live_grep = {
+          path_display = { "truncate" },
+        },
+      },
+    })
+
+    telescope.load_extension("fzf")
+
+    -- Keymaps
+    local keymap = vim.keymap
+    keymap.set("n", "<leader><leader>", "<cmd>Telescope find_files<cr>")
+    keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>")
+    keymap.set("n", "<leader>/", "<cmd>Telescope live_grep<cr>")
+    keymap.set("n", "<leader>fc", "<cmd>Telescope grep_string<cr>")
+  end,
+}
+```
+
+From: `lua/leyland/plugins/telescope.lua`
+
+**Key points:**
+- **`dependencies`**: Ensures these plugins are installed and loaded first
+- **Nested spec**: `telescope-fzf-native.nvim` has its own `build` command
+- **`config`**: Comprehensive setup including configuration, extensions, and keymaps
+- **`load_extension`**: Load extensions after setup
+
+<Note>
+  Dependencies are always loaded before the main plugin, ensuring required functionality is available.
+</Note>
+
+## Loading Strategies
+
+lazy.nvim provides multiple ways to control when plugins load.
+
+### Eager Loading
+
+```lua
+{
+  "author/plugin",
+  lazy = false,  -- Load immediately on startup
+  priority = 1000,  -- Load before other plugins
+}
+```
+
+**Use for:**
+- Colorschemes
+- UI frameworks
+- Plugins that must be available immediately
+
+### Event-Based Loading
+
+```lua
+{
+  "author/plugin",
+  event = "BufReadPre",  -- Single event
+  -- OR
+  event = { "BufReadPre", "BufNewFile" },  -- Multiple events
+}
+```
+
+**Common events:**
+- `VeryLazy`: After startup (recommended default)
+- `BufReadPre`: Before reading a buffer
+- `BufNewFile`: Creating a new file
+- `InsertEnter`: Entering insert mode
+- `CmdlineEnter`: Entering command mode
+
+### Command-Based Loading
+
+```lua
+{
+  "author/plugin",
+  cmd = "PluginCommand",  -- Single command
+  -- OR
+  cmd = { "Command1", "Command2" },  -- Multiple commands
+}
+```
+
+Plugin loads when the command is first used.
+
+### Key-Based Loading
+
+```lua
+{
+  "author/plugin",
+  keys = {
+    { "<leader>f", "<cmd>PluginCommand<cr>", desc = "Description" },
+    { "<leader>g", mode = "v", desc = "Visual mode mapping" },
+  },
+}
+```
+
+Plugin loads when any of the keymaps are triggered.
+
+### Filetype-Based Loading
+
+```lua
+{
+  "author/plugin",
+  ft = "lua",  -- Single filetype
+  -- OR
+  ft = { "lua", "vim" },  -- Multiple filetypes
+}
+```
+
+## Configuration Patterns
+
+### Setup Function
+
+Most common pattern:
+
+```lua
+config = function()
+  require("plugin").setup({
+    option1 = value1,
+    option2 = value2,
+  })
+end
+```
+
+### Setup with Additional Logic
+
+```lua
+config = function()
+  local plugin = require("plugin")
+  
+  plugin.setup({ })
+  
+  -- Additional configuration
+  plugin.load_extension("ext")
+  
+  -- Keymaps
+  vim.keymap.set("n", "<leader>x", plugin.action)
+end
+```
+
+### Direct Configuration
+
+```lua
+opts = {
+  option1 = value1,
+  option2 = value2,
+}
+```
+
+Equivalent to calling `setup(opts)` automatically.
+
+## Lock File Management
+
+The `lazy-lock.json` file locks plugins to specific commits.
+
+### Structure
+
+```json
+{
+  "LuaSnip": { 
+    "branch": "master", 
+    "commit": "5a1e39223db9a0498024a77b8441169d260c8c25" 
+  },
+  "telescope.nvim": { 
+    "branch": "0.1.x", 
+    "commit": "a0bbec21143c7bc5f8bb02e0005fa0b982edc026" 
+  },
+  "lazy.nvim": { 
+    "branch": "main", 
+    "commit": "306a05526ada86a7b30af95c5cc81ffba93fef97" 
+  }
+}
+```
+
+From: `lazy-lock.json`
+
+### Operations
+
+**Update lock file:**
+```vim
+:Lazy update
+```
+
+**Restore to lock file:**
+```vim
+:Lazy restore
+```
+
+**Sync (install + update):**
+```vim
+:Lazy sync
+```
+
+<Warning>
+  Always commit `lazy-lock.json` to version control to ensure consistent plugin versions across machines.
+</Warning>
+
+## Commands
+
+### Management Commands
+
+- `:Lazy` - Open lazy.nvim UI
+- `:Lazy install` - Install missing plugins
+- `:Lazy update [plugins]` - Update plugins (or specific plugins)
+- `:Lazy sync` - Install missing + update + clean
+- `:Lazy clean` - Remove unused plugins
+- `:Lazy restore` - Restore to lockfile state
+
+### Information Commands
+
+- `:Lazy check` - Check for updates
+- `:Lazy log` - Show recent updates
+- `:Lazy profile` - Show startup profiling
+- `:Lazy debug` - Show debug information
+- `:Lazy help` - Show help documentation
+
+## UI Interface
+
+The `:Lazy` command opens an interactive UI.
+
+### Keyboard Shortcuts
+
+```
+?  - Toggle help
+I  - Install missing plugins
+U  - Update plugins
+S  - Sync (install + update + clean)
+X  - Clear finished tasks
+C  - Check for updates
+L  - Show log
+R  - Restore to lockfile
+P  - Show profile
+D  - Show debug info
+```
+
+### Plugin Status Icons
+
+- ✓ - Installed and loaded
+- ○ - Installed but not loaded
+- ✗ - Not installed
+- ⚠ - Has updates available
+
+## Profiling
+
+Use `:Lazy profile` to analyze startup performance.
+
+### Reading Profile Data
+
+```
+Plugin Name                Time
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+lazy.nvim              0.5ms
+nvim-treesitter       12.3ms
+telescope.nvim         8.7ms
+```
+
+**Optimization tips:**
+- Plugins taking >20ms should be lazy loaded
+- Use `event`, `cmd`, or `keys` to defer loading
+- Check if plugin configuration is doing expensive work
+
+<Tip>
+  Press `<CR>` on a plugin in the profile view to see detailed timing breakdown.
+</Tip>
+
+## Troubleshooting
+
+### Plugin Not Loading
+
+<Steps>
+
+### Check if installed
+
+```vim
+:Lazy
+```
+
+Look for the plugin in the list.
+
+### Verify loading strategy
+
+If using lazy loading, ensure the trigger condition is met:
+- Event has fired
+- Command has been called
+- Keymap has been pressed
+
+### Check for errors
+
+```vim
+:Lazy log
+:messages
+```
+
+</Steps>
+
+### Update Issues
+
+```vim
+:Lazy restore  " Restore to lockfile
+:Lazy clear    " Clear cache
+:Lazy sync     " Reinstall everything
+```
+
+### Performance Issues
+
+<Steps>
+
+### Profile startup
+
+```vim
+:Lazy profile
+```
+
+### Identify slow plugins
+
+Look for plugins taking >20ms.
+
+### Add lazy loading
+
+Add `event`, `cmd`, or `keys` to slow plugins.
+
+### Restart and re-profile
+
+Verify improvements.
+
+</Steps>
+
+## Advanced Configuration
+
+### Custom Plugin Spec
+
+Create a plugin from a local directory:
+
+```lua
+{
+  dir = "~/projects/my-plugin",
+  config = function()
+    require("my-plugin").setup({})
+  end,
+}
+```
+
+### Conditional Loading
+
+```lua
+{
+  "author/plugin",
+  cond = function()
+    return vim.fn.executable("tool") == 1
+  end,
+}
+```
+
+### Init vs Config
+
+```lua
+{
+  "author/plugin",
+  init = function()
+    -- Runs BEFORE plugin loads
+    -- Good for: keymaps, autocommands, global settings
+  end,
+  config = function()
+    -- Runs AFTER plugin loads
+    -- Good for: plugin.setup()
+  end,
+}
+```
+
+### Version Pinning
+
+```lua
+{
+  "author/plugin",
+  version = "v1.0.0",  -- Specific version
+  -- OR
+  version = "^1.0",    -- Any 1.x version
+}
+```
+
+## Best Practices
+
+1. **Lazy load by default**: Only eager load when necessary
+2. **Profile regularly**: Check `:Lazy profile` after adding plugins
+3. **Use lockfile**: Commit `lazy-lock.json` for reproducibility
+4. **Organize by category**: Separate plugins into logical files
+5. **Document configuration**: Add comments for non-obvious settings
+6. **Test updates**: Use `:Lazy restore` to rollback if needed
+7. **Clean unused plugins**: Run `:Lazy clean` periodically
+
+## Resources
+
+- [lazy.nvim GitHub](https://github.com/folke/lazy.nvim)
+- [lazy.nvim Documentation](https://github.com/folke/lazy.nvim#-plugin-spec)
+- [Plugin Specification](https://github.com/folke/lazy.nvim#-plugin-spec)
+
+## Next Steps
+
+- [Plugin Overview](/plugins/overview) - Overview of all installed plugins
+- [LSP Configuration](/lsp/overview) - Configure language servers
+- [Customization](/configuration/options) - Customize your setup

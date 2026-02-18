@@ -1,0 +1,728 @@
+---
+title: LSP Server Configuration
+description: Learn how to add and configure Language Server Protocol (LSP) servers in nvim-luffy
+---
+
+## Overview
+
+nvim-luffy uses Mason for managing LSP servers and related tools. The LSP configuration is located in `lua/leyland/plugins/lsp/`, with automatic server installation and configuration through mason-lspconfig.
+
+## LSP Architecture
+
+nvim-luffy's LSP setup consists of three main components:
+
+1. **Mason** - Package manager for LSP servers, formatters, and linters
+2. **mason-lspconfig** - Bridges Mason with nvim-lspconfig
+3. **nvim-lspconfig** - Configures and launches LSP servers
+
+## Adding LSP Servers
+
+<Steps>
+
+### Edit the Mason Configuration
+
+Open `lua/leyland/plugins/lsp/mason.lua` and add your server to the `ensure_installed` list:
+
+```lua lua/leyland/plugins/lsp/mason.lua
+return {
+  {
+    "williamboman/mason-lspconfig.nvim",
+    opts = {
+      ensure_installed = {
+        "ts_ls",        -- TypeScript
+        "html",         -- HTML
+        "cssls",        -- CSS
+        "tailwindcss",  -- Tailwind CSS
+        "lua_ls",       -- Lua
+        "pyright",      -- Python
+        "rust_analyzer", -- Add Rust
+        "gopls",        -- Add Go
+        "clangd",       -- Add C/C++
+      },
+    },
+  },
+}
+```
+
+### Restart Neovim
+
+Mason will automatically install the new servers on the next startup.
+
+### Verify Installation
+
+Check that the server was installed:
+
+```vim
+:Mason
+```
+
+You should see your server listed with a checkmark (✓).
+
+</Steps>
+
+<Note>
+Mason will automatically download and install LSP servers when you add them to the `ensure_installed` list.
+</Note>
+
+## Current LSP Configuration
+
+Here's the complete current configuration:
+
+```lua lua/leyland/plugins/lsp/mason.lua
+return {
+  {
+    "williamboman/mason-lspconfig.nvim",
+    opts = {
+      -- list of servers for mason to install
+      ensure_installed = {
+        "ts_ls",
+        "html",
+        "cssls",
+        "tailwindcss",
+        "svelte",
+        "lua_ls",
+        "graphql",
+        "emmet_ls",
+        "prismals",
+        "pyright",
+        "eslint",
+      },
+    },
+    dependencies = {
+      {
+        "williamboman/mason.nvim",
+        opts = {
+          ui = {
+            icons = {
+              package_installed = "✓",
+              package_pending = "➜",
+              package_uninstalled = "✗",
+            },
+          },
+        },
+      },
+      "neovim/nvim-lspconfig",
+    },
+  },
+  {
+    "WhoIsSethDaniel/mason-tool-installer.nvim",
+    opts = {
+      ensure_installed = {
+        "prettier",  -- prettier formatter
+        "stylua",    -- lua formatter
+        "isort",     -- python formatter
+        "black",     -- python formatter
+        "pylint",
+        "eslint_d",
+      },
+    },
+    dependencies = {
+      "williamboman/mason.nvim",
+    },
+  },
+}
+```
+
+## LSP Server Examples
+
+### Web Development
+
+```lua
+ensure_installed = {
+  -- JavaScript/TypeScript
+  "ts_ls",           -- TypeScript/JavaScript
+  "eslint",          -- JavaScript linter
+  "biome",           -- Fast linter/formatter
+  
+  -- HTML/CSS
+  "html",            -- HTML
+  "cssls",           -- CSS
+  "tailwindcss",     -- Tailwind CSS
+  "emmet_ls",        -- Emmet completions
+  
+  -- Frameworks
+  "svelte",          -- Svelte
+  "vue",             -- Vue
+  "astro",           -- Astro
+  
+  -- GraphQL
+  "graphql",         -- GraphQL
+}
+```
+
+### Backend Development
+
+```lua
+ensure_installed = {
+  -- Python
+  "pyright",         -- Python type checking
+  "ruff_lsp",        -- Python linting (fast)
+  
+  -- Go
+  "gopls",           -- Go
+  
+  -- Rust
+  "rust_analyzer",   -- Rust
+  
+  -- Java
+  "jdtls",           -- Java
+  
+  -- C/C++
+  "clangd",          -- C/C++/Objective-C
+  
+  -- C#
+  "omnisharp",       -- C#
+}
+```
+
+### Systems & Low-Level
+
+```lua
+ensure_installed = {
+  "rust_analyzer",   -- Rust
+  "clangd",          -- C/C++
+  "asm_lsp",         -- Assembly
+  "cmake",           -- CMake
+}
+```
+
+### Data & Config
+
+```lua
+ensure_installed = {
+  "jsonls",          -- JSON
+  "yamlls",          -- YAML
+  "taplo",           -- TOML
+  "prismals",        -- Prisma ORM
+  "sqlls",           -- SQL
+}
+```
+
+### DevOps & Cloud
+
+```lua
+ensure_installed = {
+  "dockerls",        -- Dockerfile
+  "docker_compose_language_service", -- Docker Compose
+  "terraformls",     -- Terraform
+  "ansiblels",       -- Ansible
+  "helm_ls",         -- Helm charts
+}
+```
+
+## Custom LSP Configuration
+
+For servers that need custom configuration, create settings in the LSP config file:
+
+```lua lua/leyland/plugins/lsp/lsp.lua
+return {
+  "hrsh7th/cmp-nvim-lsp",
+  event = { "BufReadPre", "BufNewFile" },
+  dependencies = {
+    { "antosha417/nvim-lsp-file-operations", config = true },
+    { "folke/lazydev.nvim", opts = {} },
+  },
+  config = function()
+    local cmp_nvim_lsp = require("cmp_nvim_lsp")
+    local capabilities = cmp_nvim_lsp.default_capabilities()
+    
+    -- Default config for all servers
+    vim.lsp.config("*", {
+      capabilities = capabilities,
+    })
+    
+    -- Custom configuration for lua_ls
+    vim.lsp.config.lua_ls = {
+      settings = {
+        Lua = {
+          diagnostics = {
+            globals = { "vim" },  -- Recognize 'vim' as global
+          },
+          workspace = {
+            library = {
+              [vim.fn.expand("$VIMRUNTIME/lua")] = true,
+              [vim.fn.stdpath("config") .. "/lua"] = true,
+            },
+          },
+        },
+      },
+    }
+    
+    -- Custom configuration for pyright
+    vim.lsp.config.pyright = {
+      settings = {
+        python = {
+          analysis = {
+            typeCheckingMode = "basic",
+            autoSearchPaths = true,
+            useLibraryCodeForTypes = true,
+          },
+        },
+      },
+    }
+  end,
+}
+```
+
+## Advanced Server Configurations
+
+### TypeScript with ESLint Integration
+
+```lua
+vim.lsp.config.ts_ls = {
+  settings = {
+    typescript = {
+      inlayHints = {
+        includeInlayParameterNameHints = "all",
+        includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+        includeInlayFunctionParameterTypeHints = true,
+        includeInlayVariableTypeHints = true,
+        includeInlayPropertyDeclarationTypeHints = true,
+        includeInlayFunctionLikeReturnTypeHints = true,
+        includeInlayEnumMemberValueHints = true,
+      },
+    },
+    javascript = {
+      inlayHints = {
+        includeInlayParameterNameHints = "all",
+        includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+        includeInlayFunctionParameterTypeHints = true,
+        includeInlayVariableTypeHints = true,
+        includeInlayPropertyDeclarationTypeHints = true,
+        includeInlayFunctionLikeReturnTypeHints = true,
+        includeInlayEnumMemberValueHints = true,
+      },
+    },
+  },
+}
+```
+
+### Rust Analyzer with Cargo
+
+```lua
+vim.lsp.config.rust_analyzer = {
+  settings = {
+    ["rust-analyzer"] = {
+      cargo = {
+        allFeatures = true,
+        loadOutDirsFromCheck = true,
+        runBuildScripts = true,
+      },
+      checkOnSave = {
+        command = "clippy",
+        extraArgs = { "--all", "--", "-W", "clippy::all" },
+      },
+      procMacro = {
+        enable = true,
+        ignored = {
+          ["async-trait"] = { "async_trait" },
+          ["napi-derive"] = { "napi" },
+          ["async-recursion"] = { "async_recursion" },
+        },
+      },
+    },
+  },
+}
+```
+
+### Go with gopls
+
+```lua
+vim.lsp.config.gopls = {
+  settings = {
+    gopls = {
+      analyses = {
+        unusedparams = true,
+        shadow = true,
+      },
+      staticcheck = true,
+      gofumpt = true,
+      hints = {
+        assignVariableTypes = true,
+        compositeLiteralFields = true,
+        compositeLiteralTypes = true,
+        constantValues = true,
+        functionTypeParameters = true,
+        parameterNames = true,
+        rangeVariableTypes = true,
+      },
+    },
+  },
+}
+```
+
+### JSON with Schema Support
+
+```lua
+vim.lsp.config.jsonls = {
+  settings = {
+    json = {
+      schemas = {
+        {
+          fileMatch = { "package.json" },
+          url = "https://json.schemastore.org/package.json",
+        },
+        {
+          fileMatch = { "tsconfig*.json" },
+          url = "https://json.schemastore.org/tsconfig.json",
+        },
+        {
+          fileMatch = { ".prettierrc", ".prettierrc.json" },
+          url = "https://json.schemastore.org/prettierrc.json",
+        },
+      },
+    },
+  },
+}
+```
+
+## LSP Keybindings
+
+LSP keybindings are typically set up on buffer attach. Here's a complete example:
+
+```lua
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    local keymap = vim.keymap
+    local opts = { buffer = args.buf }
+    
+    -- Go to definition/declaration
+    keymap.set("n", "gd", vim.lsp.buf.definition, 
+      vim.tbl_extend("force", opts, { desc = "Go to definition" }))
+    keymap.set("n", "gD", vim.lsp.buf.declaration, 
+      vim.tbl_extend("force", opts, { desc = "Go to declaration" }))
+    
+    -- Show documentation
+    keymap.set("n", "K", vim.lsp.buf.hover, 
+      vim.tbl_extend("force", opts, { desc = "Show hover documentation" }))
+    
+    -- Find references
+    keymap.set("n", "gr", vim.lsp.buf.references, 
+      vim.tbl_extend("force", opts, { desc = "Find references" }))
+    keymap.set("n", "gi", vim.lsp.buf.implementation, 
+      vim.tbl_extend("force", opts, { desc = "Go to implementation" }))
+    
+    -- Type definition
+    keymap.set("n", "gt", vim.lsp.buf.type_definition, 
+      vim.tbl_extend("force", opts, { desc = "Go to type definition" }))
+    
+    -- Code actions
+    keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, 
+      vim.tbl_extend("force", opts, { desc = "Code action" }))
+    
+    -- Rename
+    keymap.set("n", "<leader>rn", vim.lsp.buf.rename, 
+      vim.tbl_extend("force", opts, { desc = "Rename symbol" }))
+    
+    -- Diagnostics
+    keymap.set("n", "[d", vim.diagnostic.goto_prev, 
+      vim.tbl_extend("force", opts, { desc = "Previous diagnostic" }))
+    keymap.set("n", "]d", vim.diagnostic.goto_next, 
+      vim.tbl_extend("force", opts, { desc = "Next diagnostic" }))
+    keymap.set("n", "<leader>d", vim.diagnostic.open_float, 
+      vim.tbl_extend("force", opts, { desc = "Show diagnostic" }))
+    
+    -- Signature help
+    keymap.set("i", "<C-k>", vim.lsp.buf.signature_help, 
+      vim.tbl_extend("force", opts, { desc = "Signature help" }))
+    
+    -- Workspace
+    keymap.set("n", "<leader>wa", vim.lsp.buf.add_workspace_folder, 
+      vim.tbl_extend("force", opts, { desc = "Add workspace folder" }))
+    keymap.set("n", "<leader>wr", vim.lsp.buf.remove_workspace_folder, 
+      vim.tbl_extend("force", opts, { desc = "Remove workspace folder" }))
+  end,
+})
+```
+
+<Tip>
+Add this autocmd to your `lua/leyland/plugins/lsp/lsp.lua` file in the `config` function.
+</Tip>
+
+## Formatters and Linters
+
+In addition to LSP servers, Mason can install formatters and linters:
+
+```lua lua/leyland/plugins/lsp/mason.lua
+{
+  "WhoIsSethDaniel/mason-tool-installer.nvim",
+  opts = {
+    ensure_installed = {
+      -- Formatters
+      "prettier",     -- JS/TS/CSS/HTML/JSON/YAML
+      "stylua",       -- Lua
+      "black",        -- Python
+      "isort",        -- Python imports
+      "gofumpt",      -- Go
+      "rustfmt",      -- Rust
+      "clang-format", -- C/C++
+      
+      -- Linters
+      "eslint_d",     -- JavaScript/TypeScript
+      "pylint",       -- Python
+      "flake8",       -- Python
+      "shellcheck",   -- Shell scripts
+      "hadolint",     -- Dockerfile
+    },
+  },
+}
+```
+
+## Diagnostic Configuration
+
+Customize how diagnostics are displayed:
+
+```lua
+-- Configure diagnostic display
+vim.diagnostic.config({
+  virtual_text = {
+    prefix = "●",
+    source = "if_many",
+  },
+  float = {
+    source = "always",
+    border = "rounded",
+  },
+  signs = true,
+  underline = true,
+  update_in_insert = false,
+  severity_sort = true,
+})
+
+-- Customize diagnostic signs
+local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
+for type, icon in pairs(signs) do
+  local hl = "DiagnosticSign" .. type
+  vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
+end
+```
+
+## Language-Specific Setup
+
+### Python Development
+
+```lua
+ensure_installed = {
+  "pyright",      -- Type checking
+  "ruff_lsp",     -- Fast linting
+  "black",        -- Formatter
+  "isort",        -- Import sorting
+  "mypy",         -- Static type checker
+  "debugpy",      -- Debugger
+}
+```
+
+### JavaScript/TypeScript Development
+
+```lua
+ensure_installed = {
+  "ts_ls",        -- TypeScript
+  "eslint",       -- Linting
+  "prettier",     -- Formatting
+  "biome",        -- Fast alternative to ESLint/Prettier
+  "emmet_ls",     -- HTML/CSS snippets
+}
+```
+
+### Rust Development
+
+```lua
+ensure_installed = {
+  "rust_analyzer", -- LSP
+  "rustfmt",       -- Formatter (included with Rust)
+  "codelldb",      -- Debugger
+}
+```
+
+### Go Development
+
+```lua
+ensure_installed = {
+  "gopls",         -- LSP
+  "gofumpt",       -- Formatter
+  "goimports",     -- Import management
+  "golangci-lint", -- Linter
+  "delve",         -- Debugger
+}
+```
+
+## Troubleshooting
+
+### Check LSP Status
+
+View attached LSP servers:
+
+```vim
+:LspInfo
+```
+
+### Check Mason Installations
+
+View installed packages:
+
+```vim
+:Mason
+```
+
+### View LSP Logs
+
+```vim
+:LspLog
+```
+
+### Server Not Starting
+
+1. Verify the server is installed:
+```vim
+:Mason
+```
+
+2. Check if the filetype is correct:
+```vim
+:set filetype?
+```
+
+3. Manually start the server:
+```vim
+:LspStart
+```
+
+### Completions Not Working
+
+Ensure nvim-cmp is configured with LSP capabilities:
+
+```lua
+local cmp_nvim_lsp = require("cmp_nvim_lsp")
+local capabilities = cmp_nvim_lsp.default_capabilities()
+
+vim.lsp.config("*", {
+  capabilities = capabilities,
+})
+```
+
+### Performance Issues
+
+Disable specific features for large files:
+
+```lua
+vim.api.nvim_create_autocmd("BufReadPre", {
+  callback = function()
+    local max_filesize = 100 * 1024 -- 100 KB
+    local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(0))
+    if ok and stats and stats.size > max_filesize then
+      vim.b.large_file = true
+      vim.cmd("syntax clear")
+      vim.opt_local.foldmethod = "manual"
+      vim.opt_local.spell = false
+    end
+  end,
+})
+```
+
+## Available LSP Servers
+
+Here's a comprehensive list of popular LSP servers available through Mason:
+
+<CodeGroup>
+
+```txt Web Development
+ts_ls              TypeScript/JavaScript
+eslint             JavaScript/TypeScript linter
+html               HTML
+cssls              CSS
+tailwindcss        Tailwind CSS
+emmet_ls           Emmet
+svelte             Svelte
+vue                Vue
+astro              Astro
+angular            Angular
+graphql            GraphQL
+prismals           Prisma
+```
+
+```txt Systems Programming
+rust_analyzer      Rust
+clangd             C/C++/Objective-C
+gopls              Go
+zig                Zig
+asm_lsp            Assembly
+cmake              CMake
+```
+
+```txt Backend
+pyright            Python
+jdtls              Java
+omnisharp          C#
+kotlin_language_server  Kotlin
+solargraph         Ruby
+elixirls           Elixir
+```
+
+```txt Data & Config
+jsonls             JSON
+yamlls             YAML
+taplo              TOML
+sqlls              SQL
+lemminx            XML
+```
+
+```txt DevOps
+dockerls           Dockerfile
+docker_compose_language_service  Docker Compose
+terraformls        Terraform
+ansiblels          Ansible
+helm_ls            Helm
+```
+
+</CodeGroup>
+
+For a complete list, run:
+
+```vim
+:Mason
+```
+
+## Best Practices
+
+<Steps>
+
+<Step title="Install only what you need">
+Don't install every LSP server. Only add servers for languages you actively use to keep startup times fast.
+</Step>
+
+<Step title="Use language-specific settings">
+Customize server behavior per language rather than using global defaults:
+```lua
+vim.lsp.config.ts_ls = {
+  settings = {
+    -- TypeScript-specific settings
+  },
+}
+```
+</Step>
+
+<Step title="Configure formatters separately">
+Use dedicated formatter plugins (like conform.nvim) instead of relying solely on LSP formatting.
+</Step>
+
+<Step title="Set up project-specific configs">
+Use `.nvim.lua` or `.exrc` files for project-specific LSP settings.
+</Step>
+
+<Step title="Monitor performance">
+Use `:LspInfo` and `:checkhealth lsp` to ensure LSP servers are running efficiently.
+</Step>
+
+</Steps>
+
+<Warning>
+Some LSP servers (like jdtls for Java) require additional configuration and can be resource-intensive.
+</Warning>
+
+## Next Steps
+
+- Learn how to [add plugins](/customization/adding-plugins)
+- Customize [keybindings](/customization/keybindings) for LSP commands
+- Explore [formatting configuration](/plugins/formatting) with conform.nvim

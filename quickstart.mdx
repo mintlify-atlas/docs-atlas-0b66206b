@@ -1,80 +1,305 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Quick Start"
+description: "Get productive with nvim-luffy in 5 minutes"
 ---
 
-## Get started in three steps
+# Quick Start Guide
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+Learn the essential keybindings and workflows to become productive with nvim-luffy immediately.
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  The leader key is set to **Space** (`<leader>` = `<Space>`)
 </Note>
+
+## Essential Keybindings
+
+### File Navigation
+
+<CardGroup cols={2}>
+  <Card title="Find Files" icon="magnifying-glass">
+    **`<Space><Space>`** - Fuzzy find files in current directory
+    
+    Uses Telescope to search through all files in your project. Start typing to filter results.
+  </Card>
+  
+  <Card title="Recent Files" icon="clock">
+    **`<Space>fr`** - Find recently opened files
+    
+    Quick access to your file history.
+  </Card>
+  
+  <Card title="Live Grep" icon="search">
+    **`<Space>/`** - Search for text across all files
+    
+    Powered by ripgrep for lightning-fast text search.
+  </Card>
+  
+  <Card title="Find Keymaps" icon="keyboard">
+    **`<Space>fk`** - Browse all available keybindings
+    
+    Forgot a keybinding? This shows them all!
+  </Card>
+</CardGroup>
+
+### Harpoon - Quick File Switching
+
+Harpoon lets you mark important files and jump between them instantly:
+
+```lua
+-- From: lua/leyland/plugins/harpoon.lua
+{
+  "<leader>H",
+  function()
+    require("harpoon"):list():add()
+  end,
+  desc = "Harpoon File",
+}
+```
+
+<Steps>
+  <Step title="Mark a file">
+    **`<Space>H`** (capital H) - Add current file to Harpoon
+    
+    Mark your most important files for quick access.
+  </Step>
+  
+  <Step title="Open Harpoon menu">
+    **`<Space>h`** (lowercase h) - Toggle Harpoon quick menu
+    
+    View and manage all your marked files.
+  </Step>
+  
+  <Step title="Jump to files">
+    **`<Space>1`** through **`<Space>9`** - Jump to marked file 1-9
+    
+    Instant navigation to your harpooned files.
+  </Step>
+</Steps>
+
+## LSP Features
+
+### Code Intelligence
+
+LSP provides intelligent code features:
+
+<CodeGroup>
+```lua Go to Definition
+-- Press 'gd' on any symbol
+function myFunction() -- Press gd here
+  return "Hello"
+end
+```
+
+```lua Find References
+-- Press 'gr' to find all references
+local result = myFunction() -- Find all uses
+```
+
+```lua Hover Documentation
+-- Press 'K' to see documentation
+vim.keymap.set() -- Press K for help
+```
+</CodeGroup>
+
+Common LSP keybindings:
+- **`gd`** - Go to definition
+- **`gr`** - Find references
+- **`K`** - Hover documentation
+- **`<Space>ca`** - Code actions
+- **`<Space>rn`** - Rename symbol
+
+## Auto-Completion
+
+nvim-cmp provides intelligent completion as you type:
+
+```lua
+-- From: lua/leyland/plugins/nvim-cmp.lua
+mapping = cmp.mapping.preset.insert({
+  ["<C-k>"] = cmp.mapping.select_prev_item(),
+  ["<C-j>"] = cmp.mapping.select_next_item(),
+  ["<C-Space>"] = cmp.mapping.complete(),
+  ["<CR>"] = cmp.mapping.confirm({ select = false }),
+  ["<Tab>"] = cmp.mapping(function(fallback)
+    if cmp.visible() then
+      cmp.select_next_item()
+    end
+  end, { "i", "s" }),
+}),
+```
+
+### Completion Keybindings
+
+- **`<C-Space>`** - Trigger completion manually
+- **`<C-j>`** / **`<C-k>`** - Navigate suggestions (down/up)
+- **`<Tab>`** - Select next item or expand snippet
+- **`<CR>`** - Confirm selection
+- **`<C-e>`** - Close completion menu
+
+<Tip>
+  Completion sources include: LSP suggestions, file paths, buffer text, and snippets.
+</Tip>
+
+## Git Workflow
+
+### Neogit
+
+Manage Git operations with an intuitive interface:
+
+**`<Space>gg`** - Open Neogit (floating window)
+
+```lua
+-- From: lua/leyland/plugins/neogit.lua
+keys = {
+  {
+    "<leader>gg",
+    function()
+      require("neogit").open({ kind = "floating" })
+    end,
+    desc = "Neogit (floating)",
+  },
+}
+```
+
+In Neogit:
+- **`s`** - Stage file/hunk
+- **`u`** - Unstage file/hunk
+- **`c`** - Commit
+- **`p`** - Push
+- **`P`** - Pull
+- **`?`** - Show help
+
+## Window Management
+
+Manage split windows efficiently:
+
+```lua
+-- From: lua/leyland/core/keymaps.lua
+keymap.set("n", "<leader>|", "<C-w>v", { desc = "Split window vertically" })
+keymap.set("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" })
+```
+
+- **`<Space>|`** - Split window vertically
+- **`<Space>sh`** - Split window horizontally
+- **`<C-h/j/k/l>`** - Navigate between windows (with vim-tmux-navigator)
+- **`<Space>bd`** - Close current buffer
+- **`<Space>ba`** - Close all buffers
+
+## Editor Configuration
+
+The configuration includes sensible defaults:
+
+```lua
+-- From: lua/leyland/core/options.lua
+opt.relativenumber = true      -- Relative line numbers
+opt.number = true              -- Show current line number
+opt.tabstop = 2                -- 2 spaces for tabs
+opt.shiftwidth = 2             -- 2 spaces for indent
+opt.expandtab = true           -- Convert tabs to spaces
+opt.ignorecase = true          -- Case insensitive search
+opt.smartcase = true           -- Smart case in search
+opt.clipboard = "unnamedplus"  -- System clipboard
+opt.splitright = true          -- Split windows right
+opt.splitbelow = true          -- Split windows below
+```
+
+## 5-Minute Workflow
+
+Here's a typical workflow to get you started:
+
+<Steps>
+  <Step title="Open your project">
+    ```bash
+    cd ~/projects/my-app
+    nvim
+    ```
+  </Step>
+  
+  <Step title="Find and open files">
+    Press **`<Space><Space>`** and type to find files
+    
+    Open multiple files and mark important ones with **`<Space>H`**
+  </Step>
+  
+  <Step title="Navigate with Harpoon">
+    Use **`<Space>1`**, **`<Space>2`**, etc. to jump between marked files
+    
+    View all harpooned files with **`<Space>h`**
+  </Step>
+  
+  <Step title="Search across codebase">
+    Press **`<Space>/`** to search for text
+    
+    Find where functions are called, variables used, etc.
+  </Step>
+  
+  <Step title="Use LSP features">
+    - Press **`gd`** on a function to go to its definition
+    - Press **`gr`** to find all references
+    - Press **`K`** to see documentation
+    - Use **`<C-Space>`** for intelligent completions
+  </Step>
+  
+  <Step title="Commit your changes">
+    Press **`<Space>gg`** to open Neogit
+    
+    Stage changes with **`s`**, commit with **`c`**, and push with **`p`**
+  </Step>
+</Steps>
+
+## Customization
+
+<CardGroup cols={2}>
+  <Card title="Change colorscheme" icon="palette">
+    Edit `lua/leyland/plugins/colorscheme.lua` and change line 37:
+    
+    ```lua
+    vim.cmd.colorscheme("catppuccin")
+    -- or "tokyonight", "rose-pine", "onedark", "modus"
+    ```
+  </Card>
+  
+  <Card title="Add keybindings" icon="keyboard">
+    Edit `lua/leyland/core/keymaps.lua`:
+    
+    ```lua
+    keymap.set("n", "<leader>w", ":w<CR>", 
+      { desc = "Save file" })
+    ```
+  </Card>
+  
+  <Card title="Modify options" icon="sliders">
+    Edit `lua/leyland/core/options.lua`:
+    
+    ```lua
+    opt.tabstop = 4  -- Change to 4 spaces
+    opt.wrap = true  -- Enable line wrap
+    ```
+  </Card>
+  
+  <Card title="Add LSP servers" icon="code">
+    Edit `lua/leyland/plugins/lsp/mason.lua`:
+    
+    ```lua
+    ensure_installed = {
+      "rust_analyzer",  -- Add Rust
+      "gopls",          -- Add Go
+    }
+    ```
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<Tip>
+  You're now ready to be productive with nvim-luffy! Explore individual plugin configurations to unlock more features.
+</Tip>
+
+<CardGroup cols={2}>
+  <Card title="Plugin Configuration" icon="puzzle-piece" href="/plugins">
+    Learn about individual plugins and their configurations
+  </Card>
+  
+  <Card title="Advanced Features" icon="wand-magic-sparkles" href="/advanced">
+    Discover advanced features and workflows
+  </Card>
+</CardGroup>

@@ -1,0 +1,503 @@
+---
+title: Adding Plugins
+description: Learn how to add and configure new plugins in nvim-luffy
+---
+
+## Overview
+
+nvim-luffy uses [lazy.nvim](https://github.com/folke/lazy.nvim) as its plugin manager. Plugins are organized in the `lua/leyland/plugins/` directory, with LSP-related plugins in a dedicated `lua/leyland/plugins/lsp/` subdirectory.
+
+## Plugin Structure
+
+<Steps>
+
+### Understanding the Plugin Directory
+
+Plugins are automatically loaded from two locations:
+- `lua/leyland/plugins/` - General plugins
+- `lua/leyland/plugins/lsp/` - LSP-specific plugins
+
+Each plugin file should return a Lua table (or array of tables) with the plugin configuration.
+
+### Creating a New Plugin File
+
+Create a new `.lua` file in the `lua/leyland/plugins/` directory. The filename can be anything descriptive.
+
+### Define the Plugin Configuration
+
+Each plugin follows the lazy.nvim specification format.
+
+</Steps>
+
+## Basic Plugin Example
+
+Here's a simple plugin configuration:
+
+```lua lua/leyland/plugins/autopairs.lua
+return {
+  "windwp/nvim-autopairs",
+  event = { "InsertEnter" },
+  dependencies = {
+    "hrsh7th/nvim-cmp",
+  },
+  config = function()
+    local autopairs = require("nvim-autopairs")
+    
+    autopairs.setup({
+      check_ts = true, -- enable treesitter
+      ts_config = {
+        lua = { "string" },
+        javascript = { "template_string" },
+      },
+    })
+    
+    -- Integration with completion
+    local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+    local cmp = require("cmp")
+    cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
+  end,
+}
+```
+
+## Plugin with Keybindings
+
+Plugins can define their keybindings directly in the configuration:
+
+```lua lua/leyland/plugins/telescope.lua
+return {
+  "nvim-telescope/telescope.nvim",
+  branch = "0.1.x",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    "nvim-tree/nvim-web-devicons",
+  },
+  config = function()
+    local telescope = require("telescope")
+    local actions = require("telescope.actions")
+    
+    telescope.setup({
+      defaults = {
+        path_display = { "filename_first" },
+        mappings = {
+          i = {
+            ["<C-k>"] = actions.move_selection_previous,
+            ["<C-j>"] = actions.move_selection_next,
+            ["<C-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
+          },
+        },
+      },
+    })
+    
+    telescope.load_extension("fzf")
+    
+    -- Set keymaps
+    local keymap = vim.keymap
+    keymap.set("n", "<leader><leader>", "<cmd>Telescope find_files<cr>", { desc = "Fuzzy find files in cwd" })
+    keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "Fuzzy find recent files" })
+    keymap.set("n", "<leader>/", "<cmd>Telescope live_grep<cr>", { desc = "Find string in cwd" })
+  end,
+}
+```
+
+## Plugin with Lazy-loaded Keys
+
+For better performance, you can lazy-load plugins when specific keys are pressed:
+
+```lua lua/leyland/plugins/harpoon.lua
+return {
+  "ThePrimeagen/harpoon",
+  branch = "harpoon2",
+  opts = {
+    menu = {
+      width = vim.api.nvim_win_get_width(0) - 4,
+    },
+    settings = {
+      save_on_toggle = true,
+    },
+  },
+  keys = function()
+    local keys = {
+      {
+        "<leader>H",
+        function()
+          require("harpoon"):list():add()
+        end,
+        desc = "Harpoon File",
+      },
+      {
+        "<leader>h",
+        function()
+          local harpoon = require("harpoon")
+          harpoon.ui:toggle_quick_menu(harpoon:list())
+        end,
+        desc = "Harpoon Quick Menu",
+      },
+    }
+    
+    -- Dynamically create keymaps for numbers 1-9
+    for i = 1, 9 do
+      table.insert(keys, {
+        "<leader>" .. i,
+        function()
+          require("harpoon"):list():select(i)
+        end,
+        desc = "Harpoon to File " .. i,
+      })
+    end
+    return keys
+  end,
+}
+```
+
+## Multiple Plugins in One File
+
+You can define multiple related plugins in a single file by returning an array:
+
+```lua lua/leyland/plugins/colorscheme.lua
+return {
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    priority = 1000,
+  },
+  {
+    "folke/tokyonight.nvim",
+    priority = 1000,
+  },
+  {
+    "rose-pine/neovim",
+    name = "rose-pine",
+    priority = 1000,
+    config = function()
+      -- Set your default theme here
+      vim.cmd.colorscheme("rose-pine")
+    end,
+  },
+}
+```
+
+<Note>
+Only the last theme in the list should have a `config` function that sets the colorscheme.
+</Note>
+
+## Plugin Configuration Options
+
+### Common Options
+
+<CodeGroup>
+
+```lua Basic Structure
+return {
+  "author/plugin-name",  -- Plugin repository (required)
+  branch = "main",       -- Specific branch
+  tag = "v1.0.0",        -- Specific tag
+  commit = "abc123",     -- Specific commit
+  version = "*",         -- Version to use (follows semantic versioning)
+}
+```
+
+```lua Loading Behavior
+return {
+  "author/plugin-name",
+  lazy = true,           -- Don't load at startup
+  event = "VeryLazy",    -- Load on event
+  cmd = "PluginCommand", -- Load on command
+  ft = "lua",            -- Load on filetype
+  keys = "<leader>p",    -- Load on keypress
+}
+```
+
+```lua Dependencies & Build
+return {
+  "author/plugin-name",
+  dependencies = {
+    "author/dependency1",
+    { "author/dependency2", config = function() end },
+  },
+  build = "make",        -- Run after install/update
+}
+```
+
+```lua Configuration
+return {
+  "author/plugin-name",
+  opts = {               -- Simple config (calls setup() automatically)
+    option1 = true,
+    option2 = "value",
+  },
+  config = function()    -- Advanced config (manual setup)
+    require("plugin-name").setup({
+      -- configuration here
+    })
+  end,
+}
+```
+
+</CodeGroup>
+
+### Priority and Loading Order
+
+```lua
+return {
+  "author/colorscheme",
+  priority = 1000,  -- Higher priority loads first (default is 50)
+  lazy = false,     -- Load immediately at startup
+}
+```
+
+<Tip>
+Use high priority (1000) for colorschemes to ensure they load before other plugins that might depend on colors.
+</Tip>
+
+## Lazy Loading Strategies
+
+### Load on Event
+
+```lua
+return {
+  "author/plugin-name",
+  event = "VeryLazy",  -- After startup is complete
+}
+```
+
+Common events:
+- `"VeryLazy"` - After Neovim has fully started
+- `"BufReadPre"` - Before reading a buffer
+- `"BufReadPost"` - After reading a buffer
+- `"BufNewFile"` - When creating a new file
+- `"InsertEnter"` - When entering insert mode
+
+### Load on Command
+
+```lua
+return {
+  "author/plugin-name",
+  cmd = { "CommandOne", "CommandTwo" },
+}
+```
+
+### Load on Filetype
+
+```lua
+return {
+  "author/plugin-name",
+  ft = { "lua", "python", "javascript" },
+}
+```
+
+## Real-World Examples
+
+### Adding a Status Line Plugin
+
+```lua lua/leyland/plugins/lualine.lua
+return {
+  "nvim-lualine/lualine.nvim",
+  dependencies = { "nvim-tree/nvim-web-devicons" },
+  event = "VeryLazy",
+  opts = {
+    options = {
+      theme = "auto",
+      component_separators = { left = "|", right = "|" },
+      section_separators = { left = "", right = "" },
+    },
+    sections = {
+      lualine_a = { "mode" },
+      lualine_b = { "branch", "diff", "diagnostics" },
+      lualine_c = { "filename" },
+      lualine_x = { "encoding", "fileformat", "filetype" },
+      lualine_y = { "progress" },
+      lualine_z = { "location" },
+    },
+  },
+}
+```
+
+### Adding a Note-Taking Plugin
+
+```lua lua/leyland/plugins/obsidian.lua
+return {
+  "epwalsh/obsidian.nvim",
+  version = "*",
+  lazy = true,
+  ft = "markdown",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+  },
+  opts = {
+    workspaces = {
+      {
+        name = "personal",
+        path = "~/Documents/notes",
+      },
+    },
+    daily_notes = {
+      folder = "daily",
+      date_format = "%Y-%m-%d",
+    },
+    completion = {
+      nvim_cmp = true,
+    },
+  },
+  keys = {
+    { "<leader>on", "<cmd>ObsidianNew<cr>", desc = "New Obsidian note" },
+    { "<leader>oo", "<cmd>ObsidianSearch<cr>", desc = "Search Obsidian notes" },
+    { "<leader>ot", "<cmd>ObsidianToday<cr>", desc = "Open today's note" },
+  },
+}
+```
+
+### Adding a Code Runner Plugin
+
+```lua lua/leyland/plugins/code-runner.lua
+return {
+  "CRAG666/code_runner.nvim",
+  cmd = { "RunCode", "RunFile", "RunProject" },
+  opts = {
+    filetype = {
+      java = {
+        "cd $dir &&",
+        "javac $fileName &&",
+        "java $fileNameWithoutExt",
+      },
+      python = "python3 -u",
+      typescript = "deno run",
+      rust = {
+        "cd $dir &&",
+        "rustc $fileName &&",
+        "$dir/$fileNameWithoutExt",
+      },
+      javascript = "node",
+    },
+  },
+  keys = {
+    { "<leader>r", "<cmd>RunCode<cr>", desc = "Run code" },
+    { "<leader>rf", "<cmd>RunFile<cr>", desc = "Run file" },
+    { "<leader>rp", "<cmd>RunProject<cr>", desc = "Run project" },
+  },
+}
+```
+
+## Managing Plugins
+
+### Installing Plugins
+
+After creating a plugin file, lazy.nvim will automatically detect and install it on the next Neovim startup.
+
+To manually trigger installation:
+
+```vim
+:Lazy
+```
+
+Then press:
+- `I` - Install missing plugins
+- `U` - Update plugins
+- `C` - Check for updates
+- `S` - Sync (clean, install, update)
+
+### Disabling a Plugin Temporarily
+
+```lua
+return {
+  "author/plugin-name",
+  enabled = false,  -- Disable this plugin
+}
+```
+
+### Removing a Plugin
+
+<Steps>
+
+<Step title="Delete the plugin file">
+Remove the plugin file from `lua/leyland/plugins/` or comment out the plugin configuration.
+</Step>
+
+<Step title="Clean up with Lazy">
+Run `:Lazy clean` to remove the plugin files from disk.
+</Step>
+
+</Steps>
+
+<Warning>
+Always backup your configuration before removing plugins, especially if they have data or state.
+</Warning>
+
+## Troubleshooting
+
+### Plugin Not Loading
+
+1. Check the plugin file syntax:
+```bash
+nvim --headless -c "lua dofile('lua/leyland/plugins/yourfile.lua')" -c "quit"
+```
+
+2. View lazy.nvim logs:
+```vim
+:Lazy log
+```
+
+3. Check for errors:
+```vim
+:messages
+```
+
+### Conflicting Keybindings
+
+List all keymaps:
+```vim
+:Telescope keymaps
+```
+
+Or check a specific keymap:
+```vim
+:verbose map <leader>ff
+```
+
+### Slow Startup
+
+Profile plugin loading times:
+```vim
+:Lazy profile
+```
+
+<Tip>
+Use lazy loading strategies (`event`, `cmd`, `ft`, `keys`) to improve startup performance.
+</Tip>
+
+## Best Practices
+
+<Steps>
+
+<Step title="One plugin per file">
+Keep plugin files focused and maintainable. Only group related plugins (like multiple colorschemes).
+</Step>
+
+<Step title="Use descriptive names">
+Name plugin files after what they do: `git.lua`, `completion.lua`, `statusline.lua`.
+</Step>
+
+<Step title="Lazy load when possible">
+Use `event`, `cmd`, `ft`, or `keys` to defer loading until needed.
+</Step>
+
+<Step title="Document your keybindings">
+Always include `desc` in keymap definitions for discoverability.
+</Step>
+
+<Step title="Pin critical plugins">
+Use specific versions or tags for plugins you rely on:
+```lua
+version = "*",  -- Latest stable version
+-- or
+tag = "v2.0.0",  -- Specific tag
+```
+</Step>
+
+</Steps>
+
+## Next Steps
+
+- Learn how to [customize keybindings](/customization/keybindings)
+- Configure [LSP servers](/customization/lsp-servers) for your languages
+- Explore the [plugin reference](/plugins/overview) for available plugins

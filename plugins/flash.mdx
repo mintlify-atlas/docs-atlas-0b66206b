@@ -1,0 +1,454 @@
+---
+title: 'Flash'
+description: 'Lightning-fast cursor movement and code navigation'
+icon: 'bolt'
+---
+
+## Overview
+
+Flash is a modern motion plugin that lets you jump to any location on screen with just a few keystrokes. It shows labels on possible jump targets, making navigation instant and precise. Flash combines the best ideas from plugins like Hop, Leap, and Lightspeed with Treesitter integration for syntax-aware navigation.
+
+<Note>
+Flash is enabled even in VSCode mode, making it a universal navigation tool across environments.
+</Note>
+
+## Features
+
+- **Character-based jumping** - Jump to any visible character
+- **Treesitter integration** - Select entire functions, classes, or syntax nodes
+- **Incremental selection** - Expand selections intelligently based on code structure
+- **Remote operations** - Perform operations at distant locations without moving cursor
+- **Multi-mode support** - Works in normal, visual, and operator-pending modes
+- **Enhanced f/t motions** - Improved character finding with `;` and `,` repeat
+
+## Configuration
+
+Flash is configured with custom character motions and Treesitter support:
+
+```lua
+return {
+  "folke/flash.nvim",
+  event = "VeryLazy",
+  vscode = true,
+  opts = {
+    modes = {
+      char = {
+        char_actions = function(motion)
+          return {
+            [";"] = "next",
+            [","] = "prev",
+          }
+        end,
+      },
+    },
+  },
+}
+```
+
+### Character Motion Enhancement
+
+Flash enhances Neovim's native `f`, `F`, `t`, `T` motions:
+
+- Press `f{char}` to jump forward to a character
+- Labels appear on all matching characters
+- Press `;` to jump to the next occurrence
+- Press `,` to jump to the previous occurrence
+
+<CardGroup cols={2}>
+  <Card title="Lazy Loading" icon="clock">
+    Loads on VeryLazy event for minimal startup impact
+  </Card>
+  
+  <Card title="VSCode Compatible" icon="code">
+    Works in both Neovim and VSCode Neovim extension
+  </Card>
+  
+  <Card title="Smart Labels" icon="tag">
+    Shows intelligent labels on jump targets
+  </Card>
+  
+  <Card title="Treesitter Powered" icon="tree">
+    Understands code structure for smart selections
+  </Card>
+</CardGroup>
+
+## Keybindings
+
+<Tabs>
+  <Tab title="Basic Navigation">
+    | Key | Modes | Action | Description |
+    | --- | ----- | ------ | ----------- |
+    | `s` | n, x, o | Flash jump | Jump to any visible location |
+    | `S` | n, x, o | Flash Treesitter | Jump to syntax nodes |
+  </Tab>
+  
+  <Tab title="Advanced">
+    | Key | Modes | Action | Description |
+    | --- | ----- | ------ | ----------- |
+    | `r` | o | Remote Flash | Perform operation at remote location |
+    | `R` | o, x | Treesitter search | Search within Treesitter nodes |
+    | `<c-s>` | c | Toggle Flash | Toggle Flash in command mode |
+  </Tab>
+  
+  <Tab title="Selection">
+    | Key | Modes | Action | Description |
+    | --- | ----- | ------ | ----------- |
+    | `<c-space>` | n, o, x | Incremental selection | Expand selection by syntax nodes |
+    | `<c-space>` | (in Flash) | Next node | Expand to next syntax node |
+    | `<BS>` | (in Flash) | Previous node | Contract to previous node |
+  </Tab>
+</Tabs>
+
+### Mode Legend
+
+- **n**: Normal mode
+- **x**: Visual mode  
+- **o**: Operator-pending mode (after `d`, `y`, `c`, etc.)
+- **c**: Command-line mode
+
+## Keybinding Implementation
+
+The keybindings are defined using Lua functions:
+
+```lua
+keys = {
+  -- Basic Flash jump
+  { "s", mode = { "n", "x", "o" }, 
+    function() require("flash").jump() end, 
+    desc = "Flash" },
+  
+  -- Treesitter-aware jump
+  { "S", mode = { "n", "o", "x" }, 
+    function() require("flash").treesitter() end, 
+    desc = "Flash Treesitter" },
+  
+  -- Remote operation
+  { "r", mode = "o", 
+    function() require("flash").remote() end, 
+    desc = "Remote Flash" },
+  
+  -- Treesitter search
+  { "R", mode = { "o", "x" }, 
+    function() require("flash").treesitter_search() end, 
+    desc = "Treesitter Search" },
+  
+  -- Toggle in command mode
+  { "<c-s>", mode = { "c" }, 
+    function() require("flash").toggle() end, 
+    desc = "Toggle Flash Search" },
+  
+  -- Incremental selection
+  { "<c-space>", mode = { "n", "o", "x" },
+    function()
+      require("flash").treesitter({
+        actions = {
+          ["<c-space>"] = "next",
+          ["<BS>"] = "prev"
+        }
+      }) 
+    end, 
+    desc = "Treesitter Incremental Selection" },
+}
+```
+
+## Usage Examples
+
+### Basic Flash Jump
+
+**Scenario:** You want to jump to the word "return" visible on screen.
+
+1. Press `s` in normal mode
+2. Type `re` (first two characters of "return")
+3. Flash shows labels on all matching locations
+4. Press the label letter to jump
+
+<Tip>
+You usually only need 1-2 characters before Flash can uniquely identify your target. The more characters you type, the fewer labels appear.
+</Tip>
+
+### Treesitter Navigation
+
+**Scenario:** You want to jump to a specific function in a file.
+
+1. Press `S` in normal mode
+2. Labels appear on syntax nodes (functions, classes, blocks)
+3. Press the label to jump to that node
+
+<Note>
+Treesitter mode (`S`) is smarter than basic Flash (`s`) - it understands code structure and only shows labels on meaningful syntax nodes, not random characters.
+</Note>
+
+### Visual Selection with Flash
+
+**Scenario:** Select from cursor to a word across the screen.
+
+1. Press `v` to enter visual mode
+2. Press `s` to activate Flash
+3. Type characters of your target
+4. Press label to select to that location
+
+Or select an entire function:
+
+1. Press `v` for visual mode
+2. Press `S` for Treesitter Flash
+3. Press label of the function
+4. Entire function is selected
+
+### Operator + Flash
+
+**Scenario:** Delete everything from cursor to a distant word.
+
+1. Press `d` to start delete operation
+2. Press `s` for Flash
+3. Type characters and select label
+4. Everything between cursor and target is deleted
+
+**Common operators with Flash:**
+- `ds` - Delete to target
+- `cs` - Change to target
+- `ys` - Yank to target (with vim-surround)
+
+### Remote Operations
+
+**Scenario:** Delete a word elsewhere on screen without moving cursor.
+
+1. Press `d` for delete
+2. Press `r` for remote Flash
+3. Flash shows labels on words
+4. Select the word to delete it
+5. Cursor stays where it was!
+
+This is powerful for quick edits without losing your place.
+
+<Tip>
+Remote Flash is perfect for fixing typos you spot while reading code - delete or change them without interrupting your workflow.
+</Tip>
+
+### Incremental Selection
+
+**Scenario:** Select progressively larger syntax blocks.
+
+1. Place cursor inside a function
+2. Press `<c-space>`
+3. Current syntax node is selected (e.g., variable name)
+4. Press `<c-space>` again
+5. Selection expands to parent node (e.g., function call)
+6. Keep pressing `<c-space>` to expand further
+7. Press `<BS>` to contract selection
+
+**Example expansion sequence:**
+```javascript
+const user = getUser(userId, options)
+//    ^--- <c-space> once: selects "user"
+//           ^--- <c-space> twice: selects "getUser(userId, options)"
+//    ^--- <c-space> 3x: selects entire line
+```
+
+<Note>
+Incremental selection simulates nvim-treesitter's built-in feature but uses Flash's interface. Perfect for quickly selecting functions, if-blocks, or class definitions.
+</Note>
+
+## Advanced Workflows
+
+### Quick Refactoring
+
+**Rename a variable:**
+
+1. Press `cs` (change + Flash)
+2. Jump to variable name
+3. Type new name
+4. Press `<Esc>` and use `n` and `.` to repeat for other occurrences
+
+Or use with visual selection:
+
+1. Press `v` then `s` to select to target
+2. Press `c` to change selection
+3. Type new code
+
+### Multi-Line Operations
+
+**Delete multiple lines:**
+
+1. Press `d`
+2. Press `S` for Treesitter Flash
+3. Jump to end of block you want to delete
+4. Entire block is deleted
+
+### Enhanced f/t/F/T Motions
+
+Flash enhances Neovim's built-in character finding:
+
+**Traditional workflow:**
+```
+fx  -> jump to next 'x'
+;   -> repeat forward
+,   -> repeat backward
+```
+
+**With Flash:**
+```
+fx  -> labels appear on all 'x' characters
+;   -> jump to next labeled 'x'
+,   -> jump to previous labeled 'x'
+```
+
+Flash makes `f`, `t`, `F`, `T` more powerful by showing all matches at once.
+
+### Command-Line Flash
+
+Flash can even help in command mode:
+
+1. Type `/` to start a search
+2. Press `<c-s>` to toggle Flash
+3. Labels appear on search matches
+4. Select label to jump to that match
+
+## Comparison with Native Motions
+
+<Tabs>
+  <Tab title="Jump to Word">
+    **Native Neovim:**
+    ```
+    w w w w w w w w w  (press 'w' nine times)
+    ```
+    
+    **With Flash:**
+    ```
+    s wo a  (press 's', type 'wo', press label 'a')
+    ```
+    
+    Flash is faster and more precise.
+  </Tab>
+  
+  <Tab title="Select Function">
+    **Native Neovim:**
+    ```
+    V               (enter visual line mode)
+    }}              (jump forward two paragraphs, maybe)
+    %               (try to find matching brace)
+    ```
+    
+    **With Flash:**
+    ```
+    v S a           (visual mode + Treesitter Flash + label)
+    ```
+    
+    Flash understands code structure.
+  </Tab>
+  
+  <Tab title="Delete to Target">
+    **Native Neovim:**
+    ```
+    d               (delete operator)
+    / target        (search for 'target')
+    <Enter>         (execute search)
+    ```
+    
+    **With Flash:**
+    ```
+    d s ta a        (delete + Flash + 'ta' + label)
+    ```
+    
+    Flash is immediate, no search mode needed.
+  </Tab>
+</Tabs>
+
+## Integration with Workflow
+
+### Combine with Treesitter
+
+Flash uses Treesitter parsers to understand code:
+
+```lua
+-- This is why Treesitter plugin is important
+require("flash").treesitter()
+```
+
+Without Treesitter, Flash can only jump to characters. With Treesitter, it understands:
+- Function definitions
+- Class declarations  
+- Conditional blocks
+- Loop structures
+- Arguments and parameters
+
+### Combine with Other Plugins
+
+Flash works seamlessly with:
+
+- **vim-surround**: `yssaw` - surround Flash target with word
+- **commentary**: `gcS` - comment out Treesitter node
+- **any operator**: Flash works with all operator-pending commands
+
+## Best Practices
+
+### When to Use Basic Flash (`s`)
+
+- Jumping to specific characters or words
+- Quick navigation within current viewport
+- When you know the exact characters you want
+
+### When to Use Treesitter Flash (`S`)
+
+- Navigating between functions or classes
+- Selecting entire code blocks
+- When you want to operate on syntax-meaningful units
+
+### When to Use Remote (`r`)
+
+- Making edits without moving cursor
+- Fixing typos while reading code
+- Quick cleanup operations
+
+<Tip>
+Develop muscle memory for `s` and `S`. Press `s` by default, use `S` when dealing with code structure. You'll naturally learn when each is appropriate.
+</Tip>
+
+## Performance
+
+### Lazy Loading
+
+```lua
+event = "VeryLazy"
+```
+
+Flash loads after Neovim startup completes, keeping initial startup fast.
+
+### Instant Labeling
+
+Flash calculates and displays labels in milliseconds, even in large files. The labeling algorithm is optimized for speed.
+
+## Troubleshooting
+
+### Labels Don't Appear
+
+1. Check if Flash is loaded: `:lua print(require('flash'))`
+2. Verify keybindings: `:map s`
+3. Try `:Lazy sync` to update plugins
+
+### Treesitter Features Not Working
+
+Ensure Treesitter is installed and parsers are available:
+
+```vim
+:TSInstallInfo
+```
+
+Flash Treesitter features require the appropriate language parser.
+
+### Conflicts with Other Plugins
+
+If `s` conflicts with other plugins:
+
+1. Flash uses `s` in normal mode, which is "substitute" natively
+2. Use `cl` instead of `s` for substitute (change one character)
+3. Or remap Flash to different keys in your config
+
+<Note>
+The `s` key in native Vim is "substitute" (delete char and enter insert mode), but Flash replaces it with something more powerful. Use `cl` if you need the old behavior.
+</Note>
+
+## Source Code
+
+View the complete configuration in the source:
+
+`~/workspace/source/lua/leyland/plugins/flash.lua`

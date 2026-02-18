@@ -1,0 +1,275 @@
+---
+title: Tmux Navigator
+description: Seamless navigation between Neovim splits and Tmux panes
+---
+
+# Tmux Navigator
+
+Tmux Navigator provides seamless navigation between Neovim window splits and Tmux panes using consistent keybindings, creating a unified workspace.
+
+## Overview
+
+nvim-luffy includes [vim-tmux-navigator](https://github.com/christoomey/vim-tmux-navigator) to enable seamless navigation between Neovim splits and Tmux panes without mental context switching.
+
+<Note>
+This plugin allows you to treat Neovim splits and Tmux panes as a single unified window system.
+</Note>
+
+## Features
+
+- **Unified Navigation**: Use the same keys to move between Neovim splits and Tmux panes
+- **Seamless Integration**: Automatically detects window boundaries
+- **No Configuration Needed**: Works out of the box with sensible defaults
+- **Smart Behavior**: Knows when you're at a Neovim boundary vs Tmux boundary
+
+## Configuration
+
+The plugin is configured in `lua/leyland/plugins/init.lua`:
+
+```lua
+return {
+  "nvim-lua/plenary.nvim", -- lua functions that many plugins use
+  "christoomey/vim-tmux-navigator", -- tmux & split window navigation
+}
+```
+
+<Tip>
+This plugin requires no additional Neovim configuration - it works immediately after installation.
+</Tip>
+
+## Keybindings
+
+The default keybindings for navigation are:
+
+| Key | Action |
+|-----|--------|
+| `<C-h>` | Move to the left split/pane |
+| `<C-j>` | Move to the split/pane below |
+| `<C-k>` | Move to the split/pane above |
+| `<C-l>` | Move to the right split/pane |
+| `<C-\>` | Move to the previous split/pane |
+
+<Note>
+`<C-h>` means `Ctrl + h`. These keybindings work in both Neovim normal mode and Tmux.
+</Note>
+
+## Tmux Configuration
+
+For the plugin to work correctly, you need to configure Tmux. Add this to your `~/.tmux.conf`:
+
+```bash
+# Smart pane switching with awareness of Vim splits.
+# See: https://github.com/christoomey/vim-tmux-navigator
+is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
+    | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?|fzf)(diff)?$'"
+bind-key -n 'C-h' if-shell "$is_vim" 'send-keys C-h'  'select-pane -L'
+bind-key -n 'C-j' if-shell "$is_vim" 'send-keys C-j'  'select-pane -D'
+bind-key -n 'C-k' if-shell "$is_vim" 'send-keys C-k'  'select-pane -U'
+bind-key -n 'C-l' if-shell "$is_vim" 'send-keys C-l'  'select-pane -R'
+
+tmux_version='$(tmux -V | sed -En "s/^tmux ([0-9]+(\.[0-9]+)?).*/\1/p")'
+if-shell -b '[ "$(echo "$tmux_version < 3.0" | bc)" = 1 ]' \
+    "bind-key -n 'C-\\' if-shell \"$is_vim\" 'send-keys C-\\'  'select-pane -l'"
+if-shell -b '[ "$(echo "$tmux_version >= 3.0" | bc)" = 1 ]' \
+    "bind-key -n 'C-\\' if-shell \"$is_vim\" 'send-keys C-\\\\'  'select-pane -l'"
+
+bind-key -T copy-mode-vi 'C-h' select-pane -L
+bind-key -T copy-mode-vi 'C-j' select-pane -D
+bind-key -T copy-mode-vi 'C-k' select-pane -U
+bind-key -T copy-mode-vi 'C-l' select-pane -R
+bind-key -T copy-mode-vi 'C-\' select-pane -l
+```
+
+<Steps>
+
+### Add Configuration to Tmux
+
+Copy the configuration above to your `~/.tmux.conf` file.
+
+### Reload Tmux Configuration
+
+Reload your Tmux configuration:
+
+```bash
+tmux source-file ~/.tmux.conf
+```
+
+Or press `<prefix> + :` and type:
+
+```
+source-file ~/.tmux.conf
+```
+
+### Test Navigation
+
+Open Neovim in a Tmux pane, create some splits, and test the navigation keys.
+
+</Steps>
+
+## Usage Examples
+
+### Basic Navigation
+
+<Steps>
+
+### Create Tmux Panes
+
+Start Tmux and create multiple panes:
+
+```bash
+tmux
+# Press <prefix> + % to split vertically
+# Press <prefix> + " to split horizontally
+```
+
+### Open Neovim in One Pane
+
+In one of the panes, open Neovim:
+
+```bash
+nvim
+```
+
+### Create Neovim Splits
+
+Inside Neovim, create splits:
+
+- Press `<leader>|` to split vertically (Space + |)
+- Press `<leader>sh` to split horizontally (Space + sh)
+
+### Navigate Seamlessly
+
+Use `<C-h>`, `<C-j>`, `<C-k>`, `<C-l>` to move between all splits and panes:
+
+- `<C-h>` moves left through Neovim splits, then to Tmux panes
+- `<C-l>` moves right through Neovim splits, then to Tmux panes
+- Works in all directions!
+
+</Steps>
+
+### Example Workflow
+
+Imagine this layout:
+
+```
+┌─────────────┬──────────────┐
+│             │              │
+│   Neovim    │   Terminal   │
+│   (split)   │   (Tmux)     │
+│             │              │
+├─────────────┤              │
+│   Neovim    │              │
+│   (split)   │              │
+└─────────────┴──────────────┘
+```
+
+With vim-tmux-navigator:
+
+- `<C-j>` moves between the two Neovim splits
+- `<C-l>` moves from Neovim to the Terminal pane
+- `<C-h>` moves back from Terminal to Neovim
+- No need to use different keys for Neovim vs Tmux!
+
+## Window Management
+
+nvim-luffy provides additional keybindings for window management (defined in `lua/leyland/core/keymaps.lua`):
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| `<leader>\|` | `<C-w>v` | Split window vertically |
+| `<leader>sh` | `<C-w>s` | Split window horizontally |
+
+<Tip>
+Combine these window management keys with Tmux Navigator for a powerful split workflow.
+</Tip>
+
+## Benefits
+
+### Unified Mental Model
+
+Instead of remembering:
+- `<C-w>h/j/k/l` for Neovim splits
+- `<prefix> + arrow keys` for Tmux panes
+
+You use one set of keys: `<C-h/j/k/l>` for everything.
+
+### Improved Productivity
+
+- Navigate faster without mode switching
+- Reduce cognitive load
+- Create complex layouts with confidence
+- Treat your entire terminal as one integrated workspace
+
+### Better Workflow
+
+Common setups become easier:
+
+```
+┌──────────┬──────────┐
+│  Editor  │  Tests   │  Run tests while editing
+├──────────┤  Running │  Navigate instantly
+│  Term    │          │  No mental overhead
+└──────────┴──────────┘
+```
+
+## Troubleshooting
+
+### Navigation Not Working
+
+If navigation between Neovim and Tmux doesn't work:
+
+1. **Check Tmux configuration**: Ensure you've added the configuration to `~/.tmux.conf`
+2. **Reload Tmux**: Run `tmux source-file ~/.tmux.conf`
+3. **Verify Neovim plugin**: Ensure the plugin is installed with `:Lazy`
+4. **Check Tmux version**: The plugin works best with Tmux 3.0+
+
+### Conflicts with Other Plugins
+
+If you have custom `<C-h/j/k/l>` mappings, they might conflict:
+
+```lua
+-- Check for conflicting mappings
+:verbose map <C-h>
+:verbose map <C-j>
+:verbose map <C-k>
+:verbose map <C-l>
+```
+
+Remove or remap conflicting keybindings in your configuration.
+
+## Advanced Configuration
+
+### Disable Specific Keybindings
+
+If you want to disable specific navigation keys:
+
+```lua
+-- Add to your init.lua or keymaps.lua
+vim.g.tmux_navigator_no_mappings = 1
+
+-- Then define only the mappings you want
+vim.keymap.set('n', '<C-h>', '<cmd>TmuxNavigateLeft<cr>')
+vim.keymap.set('n', '<C-j>', '<cmd>TmuxNavigateDown<cr>')
+vim.keymap.set('n', '<C-k>', '<cmd>TmuxNavigateUp<cr>')
+vim.keymap.set('n', '<C-l>', '<cmd>TmuxNavigateRight<cr>')
+```
+
+### Save on Switch
+
+Automatically save the current buffer when switching:
+
+```lua
+vim.g.tmux_navigator_save_on_switch = 1
+```
+
+## Plugin Source
+
+Source: `lua/leyland/plugins/init.lua:3`
+
+**Dependencies**: None  
+**Load Event**: Immediate (essential utility)
+
+## Related Features
+
+- [Window Management](/core/keymaps#window-management) - Additional split management keys
+- [Tmux](https://github.com/tmux/tmux) - The terminal multiplexer that pairs with this plugin

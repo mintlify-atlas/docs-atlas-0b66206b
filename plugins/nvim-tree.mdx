@@ -1,0 +1,273 @@
+---
+title: 'Nvim Tree'
+description: 'File explorer for Neovim'
+icon: 'folder-tree'
+---
+
+## Overview
+
+Nvim Tree is a file explorer for Neovim that provides a tree-like view of your project's file system. It features Git integration, file operations, and intuitive navigation. In nvim-luffy, it's configured to appear on the right side of the screen with custom keybindings.
+
+<Note>
+Nvim Tree replaces the default netrw file explorer for better performance and features.
+</Note>
+
+## Features
+
+- **Tree-based file navigation** with collapsible folders
+- **Git status integration** showing modified, staged, and untracked files
+- **File operations** (create, delete, rename, copy)
+- **Relative line numbers** for quick navigation
+- **Custom width** optimized for viewing file paths
+- **Icon support** with folder arrows and file type icons
+
+## Configuration
+
+### Basic Setup
+
+```lua
+local nvimtree = require("nvim-tree")
+
+-- Disable netrw (Neovim's default file explorer)
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+nvimtree.setup({
+  on_attach = on_attach,
+  view = {
+    width = 50,
+    relativenumber = true,
+    side = "right",
+  },
+  renderer = {
+    indent_markers = {
+      enable = true,
+    },
+    icons = {
+      glyphs = {
+        folder = {
+          arrow_closed = "",
+          arrow_open = "",
+        },
+      },
+    },
+  },
+  actions = {
+    open_file = {
+      window_picker = {
+        enable = false,
+      },
+    },
+  },
+  filters = {
+    custom = { ".DS_Store" },
+  },
+  git = {
+    ignore = false,
+  },
+})
+```
+
+### Custom Key Mappings
+
+Nvim Tree uses a custom `on_attach` function to define buffer-local keymaps:
+
+```lua
+local function on_attach(bufnr)
+  local api = require("nvim-tree.api")
+  local function opts(desc)
+    return { 
+      desc = "nvim-tree: " .. desc, 
+      buffer = bufnr, 
+      noremap = true, 
+      silent = true, 
+      nowait = true 
+    }
+  end
+
+  -- Load default mappings
+  api.config.mappings.default_on_attach(bufnr)
+
+  -- Custom mappings
+  vim.keymap.set("n", "l", api.node.open.edit, opts("Open"))
+  vim.keymap.set("n", "h", api.node.navigate.parent_close, opts("Close Directory"))
+end
+```
+
+### Configuration Options Explained
+
+<CardGroup cols={2}>
+  <Card title="Right Side View" icon="sidebar">
+    File tree appears on the right side at 50 characters wide
+  </Card>
+  
+  <Card title="Relative Numbers" icon="hashtag">
+    Line numbers are relative, making it easy to jump with motions like `10j`
+  </Card>
+  
+  <Card title="Indent Markers" icon="grip-lines">
+    Visual guides show the hierarchy of nested folders
+  </Card>
+  
+  <Card title="Git Integration" icon="code-branch">
+    Shows Git status for files (doesn't hide ignored files)
+  </Card>
+</CardGroup>
+
+## Keybindings
+
+### Toggle File Explorer
+
+| Key | Action | Description |
+| --- | ------ | ----------- |
+| `<leader>e` | Toggle explorer | Open/close file explorer and focus on current file |
+
+<Tip>
+The command `NvimTreeFindFileToggle` will not only toggle the tree but also locate and highlight the current file in the tree structure.
+</Tip>
+
+### Navigation Inside Nvim Tree
+
+<Tabs>
+  <Tab title="Custom Mappings">
+    | Key | Action | Description |
+    | --- | ------ | ----------- |
+    | `l` | Open | Open file or expand folder |
+    | `h` | Close | Close parent directory |
+  </Tab>
+  
+  <Tab title="Default Mappings">
+    | Key | Action | Description |
+    | --- | ------ | ----------- |
+    | `<CR>` | Open | Open file or folder |
+    | `o` | Open | Same as `<CR>` |
+    | `a` | Create | Create new file or folder |
+    | `d` | Delete | Delete file or folder |
+    | `r` | Rename | Rename file or folder |
+    | `x` | Cut | Cut file/folder for moving |
+    | `c` | Copy | Copy file or folder |
+    | `p` | Paste | Paste cut/copied file |
+    | `R` | Refresh | Refresh tree |
+    | `?` | Help | Show all keybindings |
+  </Tab>
+  
+  <Tab title="Navigation">
+    | Key | Action | Description |
+    | --- | ------ | ----------- |
+    | `j` / `k` | Move | Navigate up/down |
+    | `gg` / `G` | Jump | Go to first/last item |
+    | `{number}j` | Jump | Jump down N lines (with relative numbers) |
+    | `{number}k` | Jump | Jump up N lines (with relative numbers) |
+    | `-` | Parent | Navigate to parent directory |
+  </Tab>
+</Tabs>
+
+## Usage Examples
+
+### Basic Navigation
+
+1. Press `<leader>e` to open the file explorer
+2. The current file will be highlighted in the tree
+3. Use `j` and `k` to move up and down
+4. Press `l` to open a file or expand a folder
+5. Press `h` to collapse a folder
+
+### Creating New Files
+
+1. Open Nvim Tree with `<leader>e`
+2. Navigate to the desired directory
+3. Press `a` to create a new file
+4. Type the filename and press `<Enter>`
+5. Add `/` at the end to create a folder instead
+
+<Tip>
+You can create nested directories in one go: type `foo/bar/baz.lua` to create the full path structure.
+</Tip>
+
+### File Operations
+
+**Moving Files:**
+
+1. Navigate to the file you want to move
+2. Press `x` to cut the file
+3. Navigate to destination folder
+4. Press `p` to paste
+
+**Copying Files:**
+
+1. Navigate to the file you want to copy
+2. Press `c` to copy
+3. Navigate to destination
+4. Press `p` to paste
+
+**Renaming Files:**
+
+1. Navigate to the file
+2. Press `r` to rename
+3. Edit the name and press `<Enter>`
+
+### Git Integration
+
+Nvim Tree automatically shows Git status with visual indicators:
+
+- **✓** - Staged file
+- **✗** - Deleted file  
+- **★** - Renamed file
+- **●** - Modified file
+- **?** - Untracked file
+
+<Note>
+The configuration sets `git.ignore = false`, which means gitignored files are still visible in the tree. This is useful when you need to access configuration files like `.env.example`.
+</Note>
+
+### Working with Large Projects
+
+With relative line numbers enabled, you can jump quickly:
+
+1. Look at the relative number of your target file
+2. Type `{number}j` or `{number}k` to jump
+3. Example: `15j` to jump 15 lines down
+
+## Special Features
+
+### Window Picker Disabled
+
+The configuration disables window picker when opening files:
+
+```lua
+actions = {
+  open_file = {
+    window_picker = {
+      enable = false,
+    },
+  },
+}
+```
+
+This means files open in the last active window instead of prompting you to choose a window.
+
+### Hidden Files
+
+By default, Nvim Tree filters out `.DS_Store` files:
+
+```lua
+filters = {
+  custom = { ".DS_Store" },
+}
+```
+
+These macOS system files won't clutter your tree view.
+
+## Dependencies
+
+```lua
+dependencies = "nvim-tree/nvim-web-devicons"
+```
+
+- **nvim-web-devicons**: Provides file type icons in the tree view
+
+## Source Code
+
+View the complete configuration in the source:
+
+`~/workspace/source/lua/leyland/plugins/nvim-tree.lua`

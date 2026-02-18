@@ -1,0 +1,231 @@
+---
+title: Neogit
+description: A magit-inspired Git interface for Neovim with a powerful staging interface
+---
+
+# Neogit
+
+Neogit is a magit-inspired Git client for Neovim that provides a powerful, keyboard-driven interface for Git operations. It offers an intuitive staging interface and integrates seamlessly with other Git tools.
+
+## Features
+
+- **Interactive Staging**: Stage/unstage files, hunks, or individual lines with simple keybindings
+- **Git Operations**: Commit, push, pull, fetch, rebase, merge, and more - all from one interface
+- **Commit History**: Browse and interact with your repository's commit history
+- **Diff Integration**: Works with Diffview.nvim for enhanced diff viewing
+- **Fuzzy Finder Support**: Integrates with Telescope, fzf-lua, or mini.pick
+- **Floating or Split Windows**: Choose your preferred layout
+
+## Installation
+
+Neogit is configured in `~/workspace/source/lua/leyland/plugins/neogit.lua:1`.
+
+```lua
+return {
+  "NeogitOrg/neogit",
+  lazy = true,
+  dependencies = {
+    "nvim-lua/plenary.nvim",        -- required
+    "sindrets/diffview.nvim",       -- optional - Diff integration
+    "nvim-telescope/telescope.nvim", -- optional
+    "ibhagwan/fzf-lua",             -- optional
+    "nvim-mini/mini.pick",          -- optional
+    "folke/snacks.nvim",            -- optional
+  },
+  cmd = "Neogit",
+  keys = {
+    {
+      "<leader>gg",
+      function()
+        require("neogit").open({ kind = "floating" })
+      end,
+      desc = "Neogit (floating)",
+    },
+  },
+}
+```
+
+### Dependencies
+
+<Note>
+  **Required**: `plenary.nvim` is the only required dependency.
+  
+  **Optional**: Diffview, Telescope, fzf-lua, mini.pick, and snacks.nvim enhance Neogit's functionality but aren't necessary.
+</Note>
+
+## Configuration
+
+The plugin is set up with lazy loading:
+
+- **Lazy Loading**: Loads only when the `:Neogit` command is executed or `<leader>gg` is pressed
+- **Floating Window**: Opens in a centered floating window for a clean, focused interface
+- **Diffview Integration**: Automatically integrates with Diffview when available
+
+## Keybindings
+
+### Opening Neogit
+
+| Keybinding | Action | Description |
+|------------|--------|-------------|
+| `<leader>gg` | Open Neogit | Opens Neogit in a floating window |
+
+<Tip>
+  Press `<leader>gg` from anywhere in Neovim to quickly access Git operations.
+</Tip>
+
+### Inside Neogit
+
+Once Neogit is open, use these keybindings:
+
+<Steps>
+
+### Navigation
+
+- `j/k` - Move down/up through items
+- `<Tab>` - Toggle the current item (expand/collapse sections)
+- `<CR>` - Open item details or trigger default action
+
+### Staging Operations
+
+- `s` - Stage the item under cursor (file, hunk, or line)
+- `u` - Unstage the item under cursor
+- `S` - Stage all unstaged changes
+- `U` - Unstage all staged changes
+- `<C-s>` - Stage everything (including untracked files)
+
+### Commit Operations
+
+- `c` - Open commit menu
+  - `c` - Create a commit
+  - `e` - Extend the last commit (amend without editing message)
+  - `w` - Reword the last commit message
+  - `a` - Amend the last commit
+- `<CR>` (in commit buffer) - Confirm commit
+
+### Branch Operations
+
+- `b` - Open branch menu
+  - `b` - Checkout a branch
+  - `c` - Create a new branch
+  - `n` - Create and checkout a new branch
+  - `d` - Delete a branch
+
+### Push/Pull Operations
+
+- `p` - Open push menu
+  - `p` - Push to remote
+  - `u` - Push to upstream
+- `F` - Open pull menu
+  - `p` - Pull from remote
+  - `r` - Pull with rebase
+
+### Other Operations
+
+- `d` - Open diff view for item under cursor
+- `?` - Show help/keybindings
+- `q` - Close Neogit
+- `<Esc>` - Go back/close panels
+- `r` - Refresh the status
+
+</Steps>
+
+## Usage
+
+### Basic Workflow
+
+<Steps>
+
+### Open Neogit
+
+Press `<leader>gg` to open the Git interface.
+
+### Stage Changes
+
+Navigate to modified files and press `s` to stage them. Use `<Tab>` to expand files and stage individual hunks.
+
+### Commit
+
+Press `c` then `c` to create a commit. Write your commit message and press `<CR>` to confirm.
+
+### Push Changes
+
+Press `p` then `p` to push your commits to the remote repository.
+
+</Steps>
+
+### Example Scenarios
+
+#### Staging Specific Hunks
+
+```plaintext
+1. Press <leader>gg to open Neogit
+2. Navigate to a modified file
+3. Press <Tab> to expand and see hunks
+4. Navigate to the hunk you want to stage
+5. Press 's' to stage just that hunk
+6. Repeat for other hunks as needed
+```
+
+#### Interactive Rebase
+
+```plaintext
+1. Open Neogit with <leader>gg
+2. Press 'r' for rebase menu
+3. Select 'i' for interactive rebase
+4. Choose the base commit
+5. Edit the rebase todo list
+6. Save and exit to start the rebase
+```
+
+#### Amending the Last Commit
+
+```plaintext
+1. Stage your additional changes
+2. Open Neogit with <leader>gg
+3. Press 'c' then 'a' to amend
+4. Edit the commit message if needed
+5. Confirm with <CR>
+```
+
+## Advanced Features
+
+### Fuzzy Finder Integration
+
+Neogit integrates with your preferred fuzzy finder:
+
+- **Telescope**: Browse commits, branches, and remotes
+- **fzf-lua**: Fast, efficient searching through Git objects
+- **mini.pick**: Lightweight picking interface
+
+### Diffview Integration
+
+When Diffview is available, pressing `d` on any item opens an enhanced diff view with:
+
+- Side-by-side or unified diff layouts
+- File tree navigation
+- Merge conflict resolution
+
+See [Diffview documentation](diffview) for more details.
+
+## Tips
+
+<Tip>
+  Use `?` inside Neogit to see all available keybindings for the current context.
+</Tip>
+
+<Tip>
+  You can stage individual lines by entering visual mode (`V`), selecting lines, and pressing `s`.
+</Tip>
+
+<Tip>
+  The floating window keeps your workspace clean. If you prefer a split layout, you can configure Neogit to use `kind = "split"` or `kind = "tab"`.
+</Tip>
+
+<Note>
+  Neogit automatically refreshes when you make changes in other buffers, keeping the Git status up to date.
+</Note>
+
+## Related
+
+- [Diffview](diffview) - Enhanced diff viewing and merge conflict resolution
+- [Telescope](/telescope) - Fuzzy finder integration for Git operations

@@ -1,0 +1,347 @@
+---
+title: Diffview
+description: Single tabpage interface for viewing diffs, file history, and resolving merge conflicts
+---
+
+# Diffview
+
+Diffview is a powerful plugin that provides a single tabpage interface for cycling through diffs for all modified files in your repository. It offers enhanced diff viewing with side-by-side layouts, file trees, and advanced merge conflict resolution.
+
+## Features
+
+- **Side-by-Side Diffs**: View changes in a clear, two-panel layout
+- **File Tree Navigation**: Browse all modified files with a tree view
+- **Merge Conflict Resolution**: Powerful 3-way merge interface
+- **Branch Comparison**: Compare any two branches or commits
+- **File History**: View the complete history of any file
+- **Multiple Layout Options**: Vertical splits, horizontal splits, or unified diffs
+
+## Installation
+
+Diffview is configured in `~/workspace/source/lua/leyland/plugins/diffview.lua:1`.
+
+```lua
+return {
+  "sindrets/diffview.nvim",
+  cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles" },
+  keys = {
+    { "<leader>dd", "<cmd>DiffviewOpen<cr>", desc = "Open diff view" },
+    { "<leader>df", "<cmd>DiffviewClose<cr>", desc = "Close diff view" },
+    { "<leader>ds", "<cmd>:DiffviewOpen origin/main...HEAD<cr>", desc = "Open branch diff view" },
+  },
+}
+```
+
+## Configuration
+
+The plugin is configured with lazy loading:
+
+- **Command Lazy Loading**: Only loads when you execute a Diffview command
+- **Quick Access**: Keybindings for common diff operations
+- **Branch Comparison**: Built-in shortcut for comparing your branch with main
+
+<Note>
+  Diffview integrates seamlessly with Neogit, enhancing the diff viewing experience.
+</Note>
+
+## Keybindings
+
+### Global Keybindings
+
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `<leader>dd` | `:DiffviewOpen` | Open diff view for current changes |
+| `<leader>df` | `:DiffviewClose` | Close the active diff view |
+| `<leader>ds` | `:DiffviewOpen origin/main...HEAD` | Compare current branch with origin/main |
+
+### Inside Diffview
+
+Once Diffview is open, use these keybindings:
+
+#### File Panel
+
+- `j/k` - Navigate down/up through files
+- `<CR>` or `<Tab>` - Open the selected file in diff view
+- `<leader>e` - Toggle the file panel
+- `g<C-x>` - Open file in horizontal split
+- `g<C-v>` - Open file in vertical split
+- `g<C-t>` - Open file in new tab
+- `R` - Refresh files and diff
+- `[x` - Go to previous conflict
+- `]x` - Go to next conflict
+
+#### Diff View
+
+- `]c` - Jump to next change
+- `[c` - Jump to previous change
+- `<leader>co` - Choose OURS (current branch) in conflict
+- `<leader>ct` - Choose THEIRS (incoming branch) in conflict
+- `<leader>cb` - Choose BASE in conflict
+- `<leader>ca` - Choose ALL (both changes) in conflict
+- `dx` - Delete the conflict region
+
+## Usage
+
+### Viewing Uncommitted Changes
+
+<Steps>
+
+### Open Diffview
+
+Press `<leader>dd` to open a diff view of all your uncommitted changes.
+
+### Navigate Files
+
+Use `j/k` in the file panel to navigate through modified files.
+
+### Review Changes
+
+Press `<CR>` on a file to view its diff in the main panel.
+
+### Close When Done
+
+Press `<leader>df` to close the diff view.
+
+</Steps>
+
+### Comparing Branches
+
+<Steps>
+
+### Quick Branch Compare
+
+Press `<leader>ds` to compare your current branch with `origin/main`.
+
+### Custom Branch Compare
+
+Use `:DiffviewOpen branch1...branch2` to compare any two branches.
+
+### Review Differences
+
+Navigate through files to see all changes between the branches.
+
+</Steps>
+
+### Resolving Merge Conflicts
+
+<Steps>
+
+### Open Conflict View
+
+After a merge conflict, run `:DiffviewOpen` to see the 3-way merge interface.
+
+### Navigate Conflicts
+
+Use `]x` and `[x` to jump between conflict markers in different files.
+
+### Choose Resolution
+
+Use the conflict resolution keybindings:
+- `<leader>co` - Accept current branch changes (OURS)
+- `<leader>ct` - Accept incoming branch changes (THEIRS)
+- `<leader>cb` - Accept base version
+- `<leader>ca` - Keep both changes
+
+### Save and Close
+
+Save the file (`:w`) and close the diff view when all conflicts are resolved.
+
+</Steps>
+
+## Commands
+
+### DiffviewOpen
+
+Open a new diffview.
+
+```vim
+:DiffviewOpen [options]
+```
+
+#### Examples
+
+```vim
+" View uncommitted changes
+:DiffviewOpen
+
+" Compare with a specific commit
+:DiffviewOpen HEAD~2
+
+" Compare two commits
+:DiffviewOpen abc123..def456
+
+" Compare branches (changes in current branch not in main)
+:DiffviewOpen origin/main...HEAD
+
+" Compare with a specific branch
+:DiffviewOpen feature/new-feature
+
+" View changes in a specific commit
+:DiffviewOpen abc123^!
+```
+
+<Tip>
+  Use `...` (three dots) for branch comparison to see only commits in your branch: `main...feature`
+  
+  Use `..` (two dots) to see all differences between branches: `main..feature`
+</Tip>
+
+### DiffviewClose
+
+Close the current diffview.
+
+```vim
+:DiffviewClose
+```
+
+### DiffviewToggleFiles
+
+Toggle the file panel visibility.
+
+```vim
+:DiffviewToggleFiles
+```
+
+### DiffviewFocusFiles
+
+Focus the file panel.
+
+```vim
+:DiffviewFocusFiles
+```
+
+### DiffviewFileHistory
+
+Open the file history view.
+
+```vim
+" View history of current file
+:DiffviewFileHistory %
+
+" View history of specific file
+:DiffviewFileHistory path/to/file.lua
+
+" View history of current branch
+:DiffviewFileHistory
+```
+
+## Advanced Usage
+
+### Reviewing Pull Request Changes
+
+```vim
+" Fetch the PR branch
+:!git fetch origin pull/123/head:pr-123
+
+" Compare with your main branch
+:DiffviewOpen main...pr-123
+```
+
+### Finding When a Bug Was Introduced
+
+<Steps>
+
+### Open File History
+
+```vim
+:DiffviewFileHistory path/to/buggy/file.lua
+```
+
+### Navigate Commits
+
+Use `j/k` to browse through commits in the file panel.
+
+### View Each Commit
+
+Press `<CR>` on each commit to see what changed.
+
+### Identify the Culprit
+
+Find the commit that introduced the problematic code.
+
+</Steps>
+
+### Staging Changes Selectively
+
+While Diffview is primarily for viewing, you can use it with Neogit:
+
+<Steps>
+
+### Open Neogit
+
+Press `<leader>gg` to open Neogit.
+
+### View Diff
+
+Press `d` on a file to open it in Diffview.
+
+### Review Changes
+
+Use Diffview's interface to thoroughly review changes.
+
+### Stage in Neogit
+
+Return to Neogit and stage the files you've reviewed.
+
+</Steps>
+
+## Layout Options
+
+Diffview offers multiple layout configurations:
+
+### Side-by-Side (Default)
+
+Two vertical panels showing before and after versions.
+
+### Unified Diff
+
+Single panel with inline diff markers (similar to `git diff`).
+
+### 3-Way Merge
+
+For merge conflicts: shows OURS, BASE, THEIRS, and RESULT in four panels.
+
+## Tips
+
+<Tip>
+  Use `<leader>ds` regularly to review all changes in your feature branch before creating a pull request.
+</Tip>
+
+<Tip>
+  The `origin/main...HEAD` syntax shows only commits in your current branch that aren't in main, making it perfect for reviewing your feature work.
+</Tip>
+
+<Tip>
+  When resolving conflicts, review the BASE version (`<leader>cb`) to understand what the code looked like before both changes.
+</Tip>
+
+<Note>
+  Diffview works with any Git repository and respects your Git configuration.
+</Note>
+
+<Tip>
+  You can open multiple Diffview tabs to compare different sets of commits simultaneously.
+</Tip>
+
+## Troubleshooting
+
+### Diffview Not Showing Changes
+
+Make sure you're in a Git repository and have uncommitted changes or specify a valid Git revision range.
+
+### Performance with Large Diffs
+
+For repositories with many changed files, Diffview may take a moment to load. Consider viewing specific files:
+
+```vim
+:DiffviewOpen -- path/to/specific/file.lua
+```
+
+### Merge Conflict Not Showing 3-Way View
+
+Ensure you're running `:DiffviewOpen` during an active merge (after `git merge` has reported conflicts).
+
+## Related
+
+- [Neogit](neogit) - Git interface that integrates with Diffview
+- [Gitsigns](/gitsigns) - Inline Git blame and hunk operations

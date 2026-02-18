@@ -1,0 +1,283 @@
+---
+title: Options & Settings
+description: Core Neovim options and editor configuration in nvim-luffy
+---
+
+# Options & Settings
+
+This page documents the core Neovim options configured in nvim-luffy. These settings control the editor's behavior, appearance, and functionality.
+
+## Overview
+
+All core options are configured in `lua/leyland/core/options.lua`. The configuration uses Neovim's `vim.opt` API for a more Lua-native experience.
+
+## File Explorer
+
+<Accordion title="Netrw Configuration">
+  ```lua
+  vim.cmd("let g:netrw_liststyle = 3")
+  ```
+  
+  Sets netrw (Neovim's built-in file explorer) to tree-style listing mode. This provides a hierarchical view of directories similar to NERDTree.
+  
+  **List Styles:**
+  - `0` - Thin listing (one file per line)
+  - `1` - Long listing (with file details)
+  - `2` - Wide listing (multiple files per line)
+  - `3` - Tree listing (hierarchical view)
+</Accordion>
+
+## Line Numbers
+
+```lua
+opt.relativenumber = true
+opt.number = true
+```
+
+<Tabs>
+  <Tab title="Configuration">
+    **Hybrid line numbering** is enabled, which shows:
+    - The absolute line number on the current line
+    - Relative line numbers on all other lines
+    
+    This is ideal for motion commands like `10j` (move down 10 lines) or `5k` (move up 5 lines).
+  </Tab>
+  
+  <Tab title="Why Relative Numbers?">
+    Relative line numbers excel at:
+    - **Quick navigation**: `15j` instead of calculating the line difference
+    - **Visual operations**: `d10j` to delete 10 lines down
+    - **Efficient editing**: Know exactly how many lines to jump
+    
+    Combined with absolute numbering on the current line, you always know your position in the file.
+  </Tab>
+</Tabs>
+
+## Interface
+
+### Command Line & Status
+
+```lua
+opt.cmdheight = 0
+opt.laststatus = 0  -- Hide the statusline
+opt.winbar = "%f %h%m%r%=%l,%c %P"
+```
+
+<Note>
+  **Minimal UI approach**: The statusline is completely hidden (`laststatus = 0`) and the command line height is set to 0. Status information is moved to the winbar instead.
+</Note>
+
+<Accordion title="Winbar Format Explained">
+  The winbar format string `"%f %h%m%r%=%l,%c %P"` breaks down as:
+  
+  | Code | Meaning |
+  |------|--------|
+  | `%f` | Relative file path |
+  | `%h` | Help buffer flag `[help]` |
+  | `%m` | Modified flag `[+]` |
+  | `%r` | Readonly flag `[RO]` |
+  | `%=` | Separation point (left/right alignment) |
+  | `%l` | Current line number |
+  | `%c` | Current column number |
+  | `%P` | Percentage through file |
+  
+  **Example output**: `lua/config.lua [+]      142,28 45%`
+</Accordion>
+
+### Visual Elements
+
+```lua
+opt.signcolumn = "yes"  -- show sign column so that text doesn't shift
+```
+
+<Tip>
+  Keeping the sign column always visible prevents text from shifting when diagnostics, git signs, or breakpoints appear. This creates a more stable editing experience.
+</Tip>
+
+## Indentation & Formatting
+
+```lua
+-- tabs & indentation
+opt.tabstop = 2
+opt.shiftwidth = 2       -- 2 spaces for indent width
+opt.expandtab = true     -- expand tab to spaces
+opt.autoindent = true    -- copy indent of current line to new line
+```
+
+<Tabs>
+  <Tab title="Settings">
+    | Option | Value | Purpose |
+    |--------|-------|--------|
+    | `tabstop` | 2 | Width of a tab character |
+    | `shiftwidth` | 2 | Spaces used for each indent level |
+    | `expandtab` | true | Convert tabs to spaces |
+    | `autoindent` | true | Copy indent from previous line |
+  </Tab>
+  
+  <Tab title="Behavior">
+    With these settings:
+    - Pressing `<Tab>` inserts **2 spaces** (not a tab character)
+    - Using `>>` or `<<` indents/dedents by **2 spaces**
+    - New lines inherit the indentation level of the previous line
+    
+    This creates consistent, space-based indentation ideal for Lua and most modern languages.
+  </Tab>
+</Tabs>
+
+<Note>
+  Use `:h autoindent` for more information on automatic indentation behavior.
+</Note>
+
+## Text Display
+
+```lua
+opt.wrap = false
+```
+
+Line wrapping is **disabled**. Long lines extend beyond the screen rather than wrapping to the next line. This is preferred by many developers for:
+- Clear understanding of actual line breaks
+- Better code structure visibility
+- Easier navigation with horizontal scrolling
+
+## Search Behavior
+
+```lua
+-- search settings
+opt.ignorecase = true    -- case insensitive search
+opt.smartcase = true     -- uses mixed case for case sensitive search
+```
+
+<Accordion title="Smart Case Search Explained">
+  The combination of `ignorecase` and `smartcase` provides intelligent search behavior:
+  
+  | Search Query | Behavior | Why |
+  |--------------|----------|-----|
+  | `/hello` | Case insensitive | All lowercase - matches `hello`, `Hello`, `HELLO` |
+  | `/Hello` | Case sensitive | Contains uppercase - matches only `Hello` |
+  | `/HELLO` | Case sensitive | Contains uppercase - matches only `HELLO` |
+  | `/hElLo` | Case sensitive | Contains uppercase - matches only `hElLo` |
+  
+  **Key insight**: Lowercase searches are flexible, but including any uppercase letter makes the search exact.
+</Accordion>
+
+<Tip>
+  This smart search approach means you can be lazy with lowercase searches for quick finding, but precise when you need to be by using uppercase letters.
+</Tip>
+
+## File Management
+
+```lua
+opt.swapfile = false
+```
+
+<Note>
+  Swap files are **disabled**. Swap files are traditionally used for crash recovery, but many developers prefer to rely on:
+  - Version control (Git)
+  - Auto-save plugins
+  - Undo persistence
+  
+  This eliminates swap file warnings when opening files that are already open elsewhere.
+</Note>
+
+## Appearance
+
+```lua
+opt.background = "dark"  -- colorschemes can be light or dark
+```
+
+Tells Neovim to use dark mode variants of colorschemes. Most themes adjust their colors based on this setting.
+
+<Accordion title="Commented Options">
+  ```lua
+  -- opt.cursorline = true
+  -- opt.termguicolors = true
+  ```
+  
+  These options are commented out but available:
+  - `cursorline`: Highlights the line containing the cursor
+  - `termguicolors`: Enables 24-bit RGB colors in the terminal
+  
+  They may be commented for performance or preference reasons.
+</Accordion>
+
+## Editing Behavior
+
+### Backspace
+
+```lua
+opt.backspace = "indent,eol,start"
+```
+
+Configures backspace to work intuitively by allowing deletion of:
+- `indent` - Automatically inserted indentation
+- `eol` - Line breaks (join lines)
+- `start` - Characters before the start of insert mode
+
+### Clipboard Integration
+
+```lua
+opt.clipboard:append("unnamedplus")
+```
+
+<Tip>
+  **System clipboard integration**: The `unnamedplus` register connects Neovim's default register to the system clipboard. This means:
+  - `y` (yank) copies to system clipboard
+  - `p` (paste) uses system clipboard
+  - No need for `"+y` or `"+p` commands
+  
+  Seamlessly copy/paste between Neovim and other applications.
+</Tip>
+
+## Window Splitting
+
+```lua
+opt.splitright = true  -- split vertical window to the right
+opt.splitbelow = true  -- split horizontal window to the bottom
+```
+
+<Tabs>
+  <Tab title="Behavior">
+    Controls where new splits appear:
+    - `:vsplit` opens new vertical splits on the **right**
+    - `:split` opens new horizontal splits **below**
+    
+    This creates a more natural flow, similar to reading direction (left-to-right, top-to-bottom).
+  </Tab>
+  
+  <Tab title="Example">
+    ```
+    Before :vsplit          After :vsplit
+    ┌──────────────┐        ┌───────┬──────┐
+    │              │        │       │ NEW  │
+    │   Current    │   →    │ Old   │ SPLIT│
+    │              │        │       │      │
+    └──────────────┘        └───────┴──────┘
+    ```
+    
+    New split appears on the right, pushing current window left.
+  </Tab>
+</Tabs>
+
+## LSP Configuration
+
+```lua
+vim.lsp.set_log_level("error")  -- Only show errors, not warnings
+```
+
+<Note>
+  LSP logging is configured to only show errors, suppressing warnings and info messages. This keeps the LSP log file clean and focuses on critical issues.
+  
+  The LSP log can be viewed with `:LspLog` or found at `~/.local/state/nvim/lsp.log`.
+</Note>
+
+## Summary
+
+The options configuration in nvim-luffy emphasizes:
+
+1. **Minimal UI** - Hidden statusline, zero command height, winbar for status
+2. **Smart defaults** - Relative numbers, smart case search, system clipboard
+3. **Developer-friendly** - 2-space indentation, no swap files, no line wrapping
+4. **Natural splits** - Right and below positioning for new windows
+5. **Clean logs** - Error-only LSP logging
+
+These settings create a clean, efficient editing environment optimized for modern development workflows.

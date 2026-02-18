@@ -1,0 +1,160 @@
+---
+title: Auto-Pairs
+description: Automatic bracket and quote pairing for efficient coding
+---
+
+# Auto-Pairs
+
+The auto-pairs plugin automatically inserts closing brackets, quotes, and other paired characters as you type, making coding faster and reducing syntax errors.
+
+## Overview
+
+nvim-luffy uses [nvim-autopairs](https://github.com/windwp/nvim-autopairs) to provide intelligent bracket and quote pairing with TreeSitter integration.
+
+<Note>
+Auto-pairs is automatically loaded when you enter insert mode to optimize startup time.
+</Note>
+
+## Features
+
+- **Smart Pairing**: Automatically inserts closing characters for `()`, `[]`, `{}`, `''`, `""`, and more
+- **TreeSitter Integration**: Context-aware pairing based on syntax
+- **Completion Integration**: Works seamlessly with nvim-cmp for auto-completion
+- **Multi-line Support**: Properly handles bracket insertion across multiple lines
+
+## Configuration
+
+The plugin is configured in `lua/leyland/plugins/autopairs.lua`:
+
+```lua
+autopairs.setup({
+  check_ts = true, -- enable treesitter
+  ts_config = {
+    lua = { "string" }, -- don't add pairs in lua string treesitter nodes
+    javascript = { "template_string" }, -- don't add pairs in javascript template_string
+    java = false, -- don't check treesitter on java
+  },
+})
+```
+
+### TreeSitter Configuration
+
+The `check_ts` option enables TreeSitter integration, which provides context-aware pairing:
+
+- **Lua**: Disables auto-pairing inside string nodes to prevent double-quoting
+- **JavaScript**: Disables auto-pairing inside template strings
+- **Java**: TreeSitter checking is disabled for better performance
+
+<Tip>
+TreeSitter integration means the plugin understands your code context. For example, it won't add pairs inside strings where they're not needed.
+</Tip>
+
+## Usage
+
+Auto-pairs works automatically without any additional configuration:
+
+<Steps>
+
+### Enter Insert Mode
+
+Press `i`, `a`, `o`, or any insert mode command.
+
+### Type Opening Character
+
+Type an opening bracket, quote, or parenthesis:
+
+```lua
+function myFunc(
+```
+
+The closing `)` is automatically inserted:
+
+```lua
+function myFunc()  -- cursor is between the parentheses
+```
+
+### Continue Typing
+
+The cursor is positioned between the paired characters for immediate typing.
+
+</Steps>
+
+## Integration with Completion
+
+Auto-pairs is integrated with nvim-cmp (completion plugin) to ensure smooth interaction:
+
+```lua
+local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+local cmp = require("cmp")
+
+-- make autopairs and completion work together
+cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
+```
+
+This integration ensures that when you select a completion item, auto-pairs will intelligently add closing characters if needed.
+
+## Supported Pairs
+
+The following character pairs are automatically handled:
+
+| Opening | Closing |
+|---------|--------|
+| `(` | `)` |
+| `[` | `]` |
+| `{` | `}` |
+| `'` | `'` |
+| `"` | `"` |
+| `` ` `` | `` ` `` |
+
+## Behavior Examples
+
+### Function Declarations
+
+```lua
+-- Type: function test(
+-- Result: function test(|)  -- | represents cursor position
+```
+
+### Array/Object Literals
+
+```javascript
+// Type: const arr = [
+// Result: const arr = [|]
+
+// Type: const obj = {
+// Result: const obj = {|}
+```
+
+### String Handling
+
+```lua
+-- Type: local str = "
+-- Result: local str = "|"  -- cursor between quotes
+
+-- Inside strings (TreeSitter aware):
+-- Type: "hello (
+-- Result: "hello ("  -- no auto-pair inside string
+```
+
+## Disabling Auto-Pairs
+
+If you need to temporarily disable auto-pairs, you can:
+
+1. Delete the character: Press backspace immediately after the opening character to remove both
+2. Skip the closing character: Press the closing character to jump over it instead of inserting a new one
+
+<Note>
+When you press a closing character that's already present, the plugin will jump over it instead of inserting a duplicate.
+</Note>
+
+## Plugin Source
+
+Source: `lua/leyland/plugins/autopairs.lua:1`
+
+**Dependencies**: `hrsh7th/nvim-cmp`  
+**Load Event**: `InsertEnter`
+
+## Related Features
+
+- [Code Completion](/features/completion) - Works seamlessly with auto-pairs
+- [TreeSitter](/features/treesitter) - Provides syntax awareness for intelligent pairing

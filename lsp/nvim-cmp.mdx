@@ -1,0 +1,586 @@
+---
+title: nvim-cmp Completion
+description: Intelligent autocompletion with nvim-cmp and LuaSnip
+---
+
+# nvim-cmp Completion
+
+nvim-cmp is a completion engine that provides intelligent suggestions from multiple sources including LSP servers, snippets, buffers, and file paths.
+
+## Plugin Configuration
+
+The nvim-cmp setup is defined in `lua/leyland/plugins/nvim-cmp.lua`:
+
+```lua
+{
+  "hrsh7th/nvim-cmp",
+  event = "InsertEnter",
+  dependencies = {
+    "hrsh7th/cmp-buffer",
+    "hrsh7th/cmp-path",
+    "L3MON4D3/LuaSnip",
+    "saadparwaiz1/cmp_luasnip",
+    "rafamadriz/friendly-snippets",
+    "onsails/lspkind.nvim",
+  },
+}
+```
+
+<Note>
+The plugin loads lazily on `InsertEnter` to improve startup time.
+</Note>
+
+## Completion Sources
+
+nvim-cmp aggregates completions from multiple sources:
+
+### 1. LSP Servers
+
+```lua
+{ name = "nvim_lsp" }
+```
+
+Provides intelligent completions from language servers:
+
+- Function signatures
+- Variable names
+- Type information
+- Documentation
+- Import suggestions
+
+**Priority:** Highest (appears first in completion menu)
+
+### 2. Snippets
+
+```lua
+{ name = "luasnip" }
+```
+
+Expands code templates and snippets:
+
+- Language-specific templates
+- Custom snippet definitions
+- VSCode-style snippets from `friendly-snippets`
+- Placeholder navigation
+
+### 3. Buffer Text
+
+```lua
+{ name = "buffer" }
+```
+
+Completes words from the current buffer:
+
+- Variable names already in the file
+- Functions defined earlier
+- Text patterns
+
+**Use case:** Helps with consistency when using custom naming
+
+### 4. File System Paths
+
+```lua
+{ name = "path" }
+```
+
+Completes file and directory paths:
+
+- Relative paths
+- Absolute paths
+- Directory navigation
+- File extensions
+
+**Example:** Typing `./src/com` suggests `./src/components/`
+
+<Tip>
+Sources are queried in order. LSP suggestions appear first, followed by snippets, buffer text, and paths.
+</Tip>
+
+## Keybindings
+
+Completion keybindings defined in `lua/leyland/plugins/nvim-cmp.lua:34-51`:
+
+### Navigation
+
+<ParamField path="Ctrl + k" type="normal">
+  Select previous suggestion
+  
+  ```lua
+  ["<C-k>"] = cmp.mapping.select_prev_item()
+  ```
+</ParamField>
+
+<ParamField path="Ctrl + j" type="normal">
+  Select next suggestion
+  
+  ```lua
+  ["<C-j>"] = cmp.mapping.select_next_item()
+  ```
+</ParamField>
+
+<ParamField path="Tab" type="normal">
+  Navigate to next item or jump to next snippet placeholder
+  
+  ```lua
+  ["<Tab>"] = cmp.mapping(function(fallback)
+    if cmp.visible() then
+      cmp.select_next_item()
+    elseif luasnip.expand_or_jumpable() then
+      luasnip.expand_or_jump()
+    else
+      fallback()
+    end
+  end, { "i", "s" })
+  ```
+  
+  **Smart behavior:**
+  - If completion menu is visible: select next item
+  - If in a snippet: jump to next placeholder
+  - Otherwise: insert tab character
+</ParamField>
+
+### Documentation
+
+<ParamField path="Ctrl + b" type="normal">
+  Scroll documentation up
+  
+  ```lua
+  ["<C-b>"] = cmp.mapping.scroll_docs(-4)
+  ```
+</ParamField>
+
+<ParamField path="Ctrl + f" type="normal">
+  Scroll documentation down
+  
+  ```lua
+  ["<C-f>"] = cmp.mapping.scroll_docs(4)
+  ```
+</ParamField>
+
+### Actions
+
+<ParamField path="Ctrl + Space" type="normal">
+  Manually trigger completion menu
+  
+  ```lua
+  ["<C-Space>"] = cmp.mapping.complete()
+  ```
+  
+  **Use case:** When completion doesn't appear automatically
+</ParamField>
+
+<ParamField path="Ctrl + e" type="normal">
+  Close completion menu
+  
+  ```lua
+  ["<C-e>"] = cmp.mapping.abort()
+  ```
+</ParamField>
+
+<ParamField path="Enter" type="normal">
+  Confirm selected completion
+  
+  ```lua
+  ["<CR>"] = cmp.mapping.confirm({ select = false })
+  ```
+  
+  **Behavior:** Only confirms explicitly selected items (not the first item automatically)
+</ParamField>
+
+<Note>
+All completion keybindings work in both Insert (`i`) and Select (`s`) modes.
+</Note>
+
+## Snippet Engine
+
+nvim-cmp uses LuaSnip as the snippet engine:
+
+### Configuration
+
+```lua
+snapshot = {
+  expand = function(args)
+    luasnip.lsp_expand(args.body)
+  end,
+}
+```
+
+**Source:** `lua/leyland/plugins/nvim-cmp.lua:29-33`
+
+### Snippet Loading
+
+VSCode-style snippets are automatically loaded:
+
+```lua
+require("luasnip.loaders.from_vscode").lazy_load()
+```
+
+**Source:** `lua/leyland/plugins/nvim-cmp.lua:26`
+
+This loads snippets from the `friendly-snippets` plugin, which includes:
+
+- Language-specific snippets
+- Framework snippets (React, Vue, etc.)
+- Common patterns
+- Boilerplate code
+
+### LuaSnip Features
+
+<CardGroup cols={2}>
+  <Card title="Placeholders" icon="arrow-right">
+    Jump between snippet fields with Tab
+  </Card>
+  
+  <Card title="Dynamic Fields" icon="wand-magic-sparkles">
+    Fields that update based on other fields
+  </Card>
+  
+  <Card title="Transformations" icon="rotate">
+    Modify text as you type
+  </Card>
+  
+  <Card title="Choices" icon="list">
+    Select from predefined options
+  </Card>
+</CardGroup>
+
+<Tip>
+Press `<Tab>` to expand snippets and jump between placeholders. The Tab key intelligently handles both completion navigation and snippet jumping.
+</Tip>
+
+## Visual Formatting
+
+Completion items are styled with lspkind for VSCode-like pictograms:
+
+```lua
+formatting = {
+  format = lspkind.cmp_format({
+    maxwidth = 50,
+    ellipsis_char = "...",
+  }),
+}
+```
+
+**Source:** `lua/leyland/plugins/nvim-cmp.lua:61-66`
+
+### Icons
+
+lspkind adds icons to completion items based on their kind:
+
+- `󰊕` Function
+- `󰜢` Variable
+- `󰌗` Class
+- `󰕘` Interface
+- `󰙅` Module
+- `󰦨` Property
+- `󰦪` Field
+- `󰻂` Snippet
+- `󰬴` Keyword
+- `󰉋` File
+- And many more...
+
+### Width Configuration
+
+- **Max width:** 50 characters
+- **Truncation:** Long completions end with `...`
+
+<Note>
+The visual formatting makes it easier to distinguish between different types of completions at a glance.
+</Note>
+
+## Dependencies
+
+The nvim-cmp setup requires several plugins:
+
+### Core Plugins
+
+<AccordionGroup>
+  <Accordion title="hrsh7th/nvim-cmp" icon="box">
+    The main completion engine.
+    
+    **Repository:** [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+  </Accordion>
+  
+  <Accordion title="hrsh7th/cmp-nvim-lsp" icon="server">
+    LSP source for nvim-cmp. Configured in `lua/leyland/plugins/lsp/lsp.lua`.
+    
+    **Setup:**
+    ```lua
+    local capabilities = cmp_nvim_lsp.default_capabilities()
+    vim.lsp.config("*", {
+      capabilities = capabilities,
+    })
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Source Plugins
+
+<AccordionGroup>
+  <Accordion title="hrsh7th/cmp-buffer" icon="file-lines">
+    Provides completions from the current buffer.
+    
+    **Repository:** [cmp-buffer](https://github.com/hrsh7th/cmp-buffer)
+  </Accordion>
+  
+  <Accordion title="hrsh7th/cmp-path" icon="folder-tree">
+    Provides file system path completions.
+    
+    **Repository:** [cmp-path](https://github.com/hrsh7th/cmp-path)
+  </Accordion>
+</AccordionGroup>
+
+### Snippet Plugins
+
+<AccordionGroup>
+  <Accordion title="L3MON4D3/LuaSnip" icon="scissors">
+    The snippet engine.
+    
+    **Version:** v2.* (follows latest release)
+    
+    **Build command:** `make install_jsregexp` for enhanced regex support
+    
+    **Repository:** [LuaSnip](https://github.com/L3MON4D3/LuaSnip)
+  </Accordion>
+  
+  <Accordion title="saadparwaiz1/cmp_luasnip" icon="link">
+    Integrates LuaSnip with nvim-cmp.
+    
+    **Repository:** [cmp_luasnip](https://github.com/saadparwaiz1/cmp_luasnip)
+  </Accordion>
+  
+  <Accordion title="rafamadriz/friendly-snippets" icon="rectangle-list">
+    Collection of pre-made snippets for various languages.
+    
+    **Repository:** [friendly-snippets](https://github.com/rafamadriz/friendly-snippets)
+  </Accordion>
+</AccordionGroup>
+
+### UI Plugins
+
+<AccordionGroup>
+  <Accordion title="onsails/lspkind.nvim" icon="icons">
+    Adds VSCode-like pictograms to completion items.
+    
+    **Repository:** [lspkind.nvim](https://github.com/onsails/lspkind.nvim)
+  </Accordion>
+</AccordionGroup>
+
+## Usage Examples
+
+### Basic Completion
+
+<Steps>
+  <Step title="Start typing">
+    Begin typing in Insert mode. The completion menu appears automatically.
+  </Step>
+  
+  <Step title="Navigate">
+    Use `<C-j>` and `<C-k>` to move through suggestions.
+  </Step>
+  
+  <Step title="Select">
+    Press `<CR>` to confirm the selected item.
+  </Step>
+</Steps>
+
+### Using Snippets
+
+<Steps>
+  <Step title="Type snippet trigger">
+    For example, type `fn` in a JavaScript file.
+  </Step>
+  
+  <Step title="See snippet in menu">
+    The snippet appears with a `󰻂` icon.
+  </Step>
+  
+  <Step title="Expand snippet">
+    Select it and press `<CR>` or `<Tab>`.
+  </Step>
+  
+  <Step title="Navigate placeholders">
+    Press `<Tab>` to jump between fields.
+  </Step>
+</Steps>
+
+### Path Completion
+
+<Steps>
+  <Step title="Type path prefix">
+    Start typing a path like `./src/`
+  </Step>
+  
+  <Step title="Browse suggestions">
+    Directory and file names appear in the menu.
+  </Step>
+  
+  <Step title="Navigate directories">
+    Select a directory to see its contents.
+  </Step>
+  
+  <Step title="Complete path">
+    Select the final file name.
+  </Step>
+</Steps>
+
+## LSP Integration
+
+Completion capabilities are registered with all LSP servers:
+
+```lua
+local cmp_nvim_lsp = require("cmp_nvim_lsp")
+local capabilities = cmp_nvim_lsp.default_capabilities()
+
+vim.lsp.config("*", {
+  capabilities = capabilities,
+})
+```
+
+**Source:** `lua/leyland/plugins/lsp/lsp.lua:10-17`
+
+This setup:
+
+1. Imports the `cmp-nvim-lsp` plugin
+2. Gets default capabilities for LSP servers
+3. Applies capabilities to all LSP servers using `vim.lsp.config("*", ...)`
+
+<Note>
+The `*` pattern means these capabilities apply to every LSP server automatically.
+</Note>
+
+## Customization Tips
+
+### Adding Sources
+
+To add a new completion source:
+
+<Steps>
+  <Step title="Install the source plugin">
+    Add it to nvim-cmp's dependencies in `lua/leyland/plugins/nvim-cmp.lua:4-17`.
+  </Step>
+  
+  <Step title="Add to sources table">
+    Add the source to the configuration:
+    ```lua
+    sources = cmp.config.sources({
+      { name = "nvim_lsp" },
+      { name = "luasnip" },
+      { name = "buffer" },
+      { name = "path" },
+      { name = "your_source" }, -- Add here
+    })
+    ```
+  </Step>
+  
+  <Step title="Restart Neovim">
+    The new source will be available immediately.
+  </Step>
+</Steps>
+
+### Changing Keybindings
+
+To customize keybindings, edit the `mapping` table in `lua/leyland/plugins/nvim-cmp.lua:34-51`.
+
+Example - use `<C-n>` and `<C-p>` for navigation:
+
+```lua
+mapping = cmp.mapping.preset.insert({
+  ["<C-n>"] = cmp.mapping.select_next_item(),
+  ["<C-p>"] = cmp.mapping.select_prev_item(),
+  -- ... other mappings
+})
+```
+
+### Adjusting Appearance
+
+Modify the lspkind formatting in `lua/leyland/plugins/nvim-cmp.lua:61-66`:
+
+```lua
+formatting = {
+  format = lspkind.cmp_format({
+    maxwidth = 70,           -- Wider menu
+    ellipsis_char = "…",     -- Different ellipsis
+    mode = "symbol_text",    -- Show both icon and text
+  }),
+}
+```
+
+<Warning>
+Changing keybindings may conflict with other plugins or Neovim defaults. Test thoroughly after making changes.
+</Warning>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Completions not appearing" icon="circle-exclamation">
+    **Possible causes:**
+    
+    1. LSP server not attached (check with `:LspInfo`)
+    2. Plugin not loaded (check with `:Lazy`)
+    3. Source not configured properly
+    
+    **Solutions:**
+    
+    - Manually trigger: `<C-Space>`
+    - Check LSP status: `:LspInfo`
+    - Restart LSP: `<leader>rs`
+    - Check for errors: `:messages`
+  </Accordion>
+  
+  <Accordion title="Snippets not working" icon="scissors">
+    **Possible causes:**
+    
+    1. LuaSnip not loaded
+    2. Friendly-snippets not installed
+    3. Snippet source not in sources list
+    
+    **Solutions:**
+    
+    - Verify plugin installation: `:Lazy`
+    - Check snippet loader in config
+    - Ensure `cmp_luasnip` is in dependencies
+  </Accordion>
+  
+  <Accordion title="Tab key not working" icon="keyboard">
+    **Possible causes:**
+    
+    1. Conflicting keybindings
+    2. Tab mapping not configured
+    3. Another plugin intercepting Tab
+    
+    **Solutions:**
+    
+    - Check for keybinding conflicts
+    - Verify Tab mapping in config
+    - Try alternative keys: `<C-j>` for navigation
+  </Accordion>
+  
+  <Accordion title="Performance issues" icon="gauge-high">
+    **Possible causes:**
+    
+    1. Too many buffer sources
+    2. Large files
+    3. Heavy LSP server
+    
+    **Solutions:**
+    
+    - Reduce buffer completion scope
+    - Increase completion delay
+    - Disable completion in large files
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="LSP Overview" icon="book" href="/lsp/overview">
+    Learn about the overall LSP setup
+  </Card>
+  <Card title="Mason" icon="box" href="/lsp/mason">
+    Manage LSP servers and tools
+  </Card>
+  <Card title="Formatting" icon="wand-magic-sparkles" href="/lsp/formatting">
+    Configure code formatting
+  </Card>
+</CardGroup>

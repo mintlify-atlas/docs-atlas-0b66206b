@@ -1,0 +1,206 @@
+---
+title: Trouble
+description: Beautiful diagnostics list for LSP errors, warnings, and references
+---
+
+# Trouble
+
+Trouble is a pretty list plugin for viewing and managing diagnostics, references, quickfix items, and more in a unified interface.
+
+## Overview
+
+nvim-luffy uses [trouble.nvim](https://github.com/folke/trouble.nvim) to provide a beautiful and functional diagnostics viewer that integrates seamlessly with LSP.
+
+<Note>
+Trouble provides a better alternative to Neovim's default quickfix and location lists with enhanced visuals and navigation.
+</Note>
+
+## Features
+
+- **Diagnostics View**: See all LSP diagnostics (errors, warnings, info, hints) in one place
+- **Beautiful UI**: Clean, icon-enhanced interface with severity highlighting
+- **Quick Navigation**: Jump directly to issues in your code
+- **Multi-Source**: Displays diagnostics from all active LSP servers
+- **Real-time Updates**: Automatically refreshes as you edit code
+
+## Configuration
+
+The plugin is configured in `lua/leyland/plugins/trouble.lua`:
+
+```lua
+return {
+  "folke/trouble.nvim",
+  dependencies = { "nvim-tree/nvim-web-devicons" },
+  opts = {},
+  keys = {
+    { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Toggle Trouble" },
+  },
+}
+```
+
+<Tip>
+The plugin uses lazy loading through the `keys` specification, meaning it only loads when you first use the keybinding.
+</Tip>
+
+## Keybindings
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| `<leader>xx` | Toggle Trouble | Open/close the Trouble diagnostics window |
+
+<Note>
+The default leader key is `Space`, so press `Space` + `x` + `x` to toggle Trouble.
+</Note>
+
+## Usage
+
+<Steps>
+
+### Open Trouble Window
+
+Press `<leader>xx` (Space + x + x) to open the Trouble diagnostics window.
+
+### View Diagnostics
+
+The window displays all diagnostics from your current workspace:
+
+```
+ Diagnostics (3)
+  
+  ❌ error: 'foo' is not defined
+     lua/myfile.lua:15:5
+  
+  ⚠️  warning: unused variable 'bar'
+     lua/myfile.lua:23:10
+  
+  💡 hint: consider using const instead
+     src/app.js:42:3
+```
+
+### Navigate to Issue
+
+With the cursor on a diagnostic line, press `<Enter>` to jump directly to that location in your code.
+
+### Close Trouble
+
+Press `<leader>xx` again or `q` to close the Trouble window.
+
+</Steps>
+
+## Trouble Window Commands
+
+When the Trouble window is open, you can use these commands:
+
+| Key | Action |
+|-----|--------|
+| `<Enter>` | Jump to the diagnostic location |
+| `<Tab>` | Jump to location but keep focus on Trouble |
+| `q` | Close the Trouble window |
+| `o` | Jump to location and close Trouble |
+| `<Esc>` | Cancel and close |
+| `zM` | Close all folds |
+| `zR` | Open all folds |
+| `zm` | Fold more |
+| `zr` | Fold less |
+
+## Diagnostic Severity Icons
+
+Trouble uses icons to indicate diagnostic severity:
+
+| Icon | Severity | Description |
+|------|----------|-------------|
+| ❌ | Error | Critical issues that prevent code from working |
+| ⚠️  | Warning | Potential problems that should be addressed |
+| ℹ️  | Info | Informational messages |
+| 💡 | Hint | Suggestions for code improvements |
+
+<Tip>
+The icons and colors are provided by nvim-web-devicons and your colorscheme, ensuring a consistent look with the rest of your setup.
+</Tip>
+
+## Use Cases
+
+### Finding All Errors in a Project
+
+When you have multiple files with errors, Trouble provides a unified view:
+
+1. Press `<leader>xx` to open Trouble
+2. See all errors across all open buffers
+3. Navigate through them systematically
+4. Press `<Enter>` on each to fix them
+
+### Code Review
+
+Use Trouble during code review to:
+
+- Quickly see all warnings and suggestions
+- Ensure no critical errors remain
+- Review LSP hints for code improvements
+
+### Debugging
+
+When debugging, Trouble helps you:
+
+- Track down all errors in the call stack
+- See related diagnostics in one place
+- Navigate between error locations efficiently
+
+## Workspace Diagnostics
+
+Trouble shows diagnostics from:
+
+- **All open buffers**: Files you currently have open
+- **All LSP servers**: TypeScript, Lua, Python, etc.
+- **Multiple sources**: ESLint, compiler errors, linter warnings
+
+<Note>
+Diagnostics are updated in real-time as you edit code. The Trouble window automatically refreshes to show current issues.
+</Note>
+
+## Example Workflow
+
+```lua
+-- You're editing a Lua file and make a typo
+local function myFunc()
+  print(undefinedVar)  -- Error: undefined variable
+end
+
+-- Press <leader>xx to open Trouble
+-- You see:
+-- ❌ error: undefined global 'undefinedVar'
+--    lua/myfile.lua:2:9
+
+-- Press <Enter> to jump to the error
+-- Fix the error
+local undefinedVar = "fixed"
+
+-- Trouble window automatically updates - error is gone!
+```
+
+## Customization
+
+While nvim-luffy uses the default Trouble configuration, you can customize it by modifying `lua/leyland/plugins/trouble.lua`:
+
+```lua
+opts = {
+  position = "bottom", -- position of the list: bottom, top, left, right
+  height = 10, -- height of the trouble list
+  icons = true, -- use devicons for filenames
+  mode = "workspace_diagnostics", -- default mode
+  fold_open = "", -- icon for open folds
+  fold_closed = "", -- icon for closed folds
+}
+```
+
+## Plugin Source
+
+Source: `lua/leyland/plugins/trouble.lua:1`
+
+**Dependencies**: `nvim-tree/nvim-web-devicons`  
+**Load Event**: Lazy loaded on keymap
+
+## Related Features
+
+- [LSP Configuration](/lsp/configuration) - Provides diagnostics that Trouble displays
+- [Telescope](/features/telescope) - Alternative way to search through diagnostics
+- [Formatting](/lsp/formatting) - Fix formatting issues shown in Trouble

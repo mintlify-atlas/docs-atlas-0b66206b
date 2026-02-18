@@ -1,0 +1,373 @@
+---
+title: 'Treesitter'
+description: 'Advanced syntax highlighting and code understanding'
+icon: 'code'
+---
+
+## Overview
+
+Treesitter is a parser generator tool and incremental parsing library. It provides superior syntax highlighting, better code understanding, and enables powerful features like smart text objects, code folding, and AST-based navigation. Unlike regex-based highlighting, Treesitter understands the structure of your code.
+
+<Note>
+Treesitter builds a syntax tree of your code in real-time, enabling context-aware features that understand the actual structure of your programming language.
+</Note>
+
+## Features
+
+- **Accurate syntax highlighting** - Understands code structure, not just patterns
+- **Fast incremental parsing** - Only re-parses changed portions of code
+- **Multi-language support** - 29 languages pre-configured
+- **Syntax tree queries** - Powers features like smart selections
+- **Better performance** - More efficient than regex-based highlighting
+- **Consistent highlighting** - Behaves the same across all file types
+
+## Configuration
+
+Treesitter is configured with a curated list of language parsers:
+
+```lua
+return {
+  "nvim-treesitter/nvim-treesitter",
+  branch = "master",
+  event = { "BufReadPre", "BufNewFile" },
+  build = ":TSUpdate",
+  config = function()
+    require("nvim-treesitter").setup({
+      ensure_installed = {
+        "json",
+        "javascript",
+        "typescript",
+        "tsx",
+        "yaml",
+        "html",
+        "css",
+        "prisma",
+        "markdown",
+        "markdown_inline",
+        "svelte",
+        "graphql",
+        "bash",
+        "lua",
+        "vim",
+        "dockerfile",
+        "gitignore",
+        "query",
+        "vimdoc",
+        "c",
+      },
+    })
+    vim.treesitter.language.register("bash", "zsh")
+  end,
+}
+```
+
+### Configuration Breakdown
+
+<CardGroup cols={2}>
+  <Card title="Lazy Loading" icon="clock">
+    Loads when reading or creating a file buffer for optimal startup time
+  </Card>
+  
+  <Card title="Auto Update" icon="rotate">
+    Runs `:TSUpdate` on installation to get the latest parsers
+  </Card>
+  
+  <Card title="29 Languages" icon="language">
+    Pre-configured support for web, systems, and config languages
+  </Card>
+  
+  <Card title="Zsh Support" icon="terminal">
+    Zsh files use bash parser for proper highlighting
+  </Card>
+</CardGroup>
+
+## Supported Languages
+
+<Tabs>
+  <Tab title="Web Development">
+    - **JavaScript** - Modern JS with ES6+ syntax
+    - **TypeScript** - Type-safe JavaScript
+    - **TSX** - React with TypeScript
+    - **HTML** - Markup language
+    - **CSS** - Stylesheets
+    - **Svelte** - Svelte framework
+    - **GraphQL** - Query language
+  </Tab>
+  
+  <Tab title="Backend & Data">
+    - **JSON** - Data interchange format
+    - **YAML** - Configuration files
+    - **Prisma** - Database ORM schema
+    - **Bash** - Shell scripts
+    - **Dockerfile** - Container definitions
+  </Tab>
+  
+  <Tab title="Documentation">
+    - **Markdown** - Documentation
+    - **Markdown Inline** - Inline markdown elements
+    - **VimDoc** - Vim help files
+  </Tab>
+  
+  <Tab title="System & Config">
+    - **Lua** - Neovim configuration
+    - **Vim** - Vimscript
+    - **C** - Systems programming
+    - **Gitignore** - Git ignore patterns
+    - **Query** - Treesitter queries
+  </Tab>
+</Tabs>
+
+## How Treesitter Works
+
+### Traditional Syntax Highlighting
+
+```
+function hello() {  // Regex: "function" = keyword
+  return "world"    // Regex: "return" = keyword
+}                   // Regex: "string" = string
+```
+
+Uses pattern matching - fast but inaccurate.
+
+### Treesitter Syntax Highlighting
+
+```
+function hello() {       // Parse: FunctionDeclaration
+  return "world"        //   -> ReturnStatement
+}                       //     -> StringLiteral
+```
+
+Builds an AST - accurate and context-aware.
+
+<Note>
+Treesitter knows that `function` in `function hello()` is a function declaration, but `function` in a comment or string is not. Regex-based highlighting can't make this distinction.
+</Note>
+
+## Benefits
+
+### Accurate Highlighting
+
+**Before Treesitter:**
+```javascript
+const class = "user" // "class" highlighted as keyword (wrong)
+const myClass = User // "User" not highlighted (wrong)
+```
+
+**With Treesitter:**
+```javascript
+const class = "user" // "class" highlighted as variable (correct)
+const myClass = User // "User" highlighted as constructor (correct)
+```
+
+### Language Integration
+
+Treesitter understands embedded languages:
+
+```jsx
+const Component = () => {
+  return (
+    <div className="wrapper">
+      {/* JavaScript in JSX */}
+      {items.map(item => (
+        <span key={item.id}>{item.name}</span>
+      ))}
+    </div>
+  )
+}
+```
+
+- JSX tags highlighted correctly
+- JavaScript expressions in `{}` highlighted correctly  
+- Nested languages properly distinguished
+
+### Markdown Code Blocks
+
+```markdown
+Here's some Python:
+
+```python
+def hello():
+    return "world"
+```
+
+Treesitter highlights the Python code inside the markdown file!
+
+<Tip>
+Treesitter enables syntax highlighting for code blocks in markdown files, making documentation much more readable.
+</Tip>
+
+## Usage Examples
+
+### Automatic Operation
+
+Treesitter works automatically - no manual commands needed:
+
+1. Open any supported file type
+2. Treesitter automatically loads the parser
+3. Syntax highlighting is applied instantly
+4. As you type, parsing updates incrementally
+
+### Checking Parser Status
+
+View installed parsers:
+
+```vim
+:TSInstallInfo
+```
+
+This shows all available parsers and which ones are installed.
+
+### Installing Additional Parsers
+
+While 29 languages are pre-installed, you can add more:
+
+```vim
+:TSInstall python
+:TSInstall rust
+:TSInstall go
+```
+
+### Updating Parsers
+
+Keep parsers up to date:
+
+```vim
+:TSUpdate
+```
+
+This updates all installed parsers to their latest versions.
+
+## Integration with Other Plugins
+
+Treesitter powers many other features in nvim-luffy:
+
+### Flash.nvim
+
+Flash uses Treesitter for smart code navigation:
+
+```lua
+require("flash").treesitter()
+```
+
+This lets you select entire functions, classes, or blocks intelligently.
+
+### Syntax Tree Inspection
+
+See the syntax tree for the element under cursor:
+
+```vim
+:Inspect
+```
+
+Useful for understanding how Treesitter parses your code.
+
+<Tip>
+Use `:Inspect` when creating custom highlight groups or debugging highlighting issues. It shows exactly what Treesitter node type is under your cursor.
+</Tip>
+
+## Language-Specific Features
+
+### Zsh Support
+
+The configuration registers Zsh files to use the Bash parser:
+
+```lua
+vim.treesitter.language.register("bash", "zsh")
+```
+
+This means `.zsh` files get proper syntax highlighting using the Bash grammar, which is compatible with most Zsh syntax.
+
+### TypeScript & TSX
+
+Both `typescript` and `tsx` parsers are installed:
+
+- **typescript**: `.ts` files
+- **tsx**: `.tsx` files (React with TypeScript)
+
+This ensures proper highlighting in React projects.
+
+### Markdown
+
+Two markdown parsers are installed:
+
+- **markdown**: Block-level elements
+- **markdown_inline**: Inline elements (bold, italic, links)
+
+Together, they provide complete markdown support with syntax highlighting for embedded code blocks.
+
+## Performance
+
+### Lazy Loading
+
+Treesitter only loads when opening file buffers:
+
+```lua
+event = { "BufReadPre", "BufNewFile" }
+```
+
+This keeps Neovim startup time fast.
+
+### Incremental Parsing
+
+Treesitter doesn't re-parse the entire file on every keystroke:
+
+1. You edit a line
+2. Treesitter identifies affected syntax nodes
+3. Only those nodes are re-parsed
+4. Rest of the tree is reused
+
+This makes editing feel instant even in large files.
+
+<Note>
+Treesitter's incremental parsing means you get accurate highlighting in real-time without noticeable lag, even in 10,000+ line files.
+</Note>
+
+## Troubleshooting
+
+### Highlighting Looks Wrong
+
+1. Check if the parser is installed: `:TSInstallInfo`
+2. Update parsers: `:TSUpdate`
+3. Restart Neovim
+
+### Parser Compilation Errors
+
+Treesitter parsers are compiled C code. If you see errors:
+
+1. Ensure you have a C compiler installed (gcc or clang)
+2. Run `:TSInstall <language>` manually
+3. Check the error output for missing dependencies
+
+### Language Not Supported
+
+If you work with a language not in the preset list:
+
+```lua
+-- Add to your config
+ensure_installed = {
+  -- ... existing languages ...
+  "rust",
+  "python",
+  "go",
+}
+```
+
+## Advanced Configuration
+
+The current setup uses minimal configuration. Treesitter supports many additional features:
+
+- **Incremental selection** - Expand selections based on syntax
+- **Indentation** - Syntax-aware indentation
+- **Folding** - Fold based on syntax structure
+
+These can be enabled by adding modules to the `setup()` call.
+
+<Tip>
+The Flash plugin in nvim-luffy already provides Treesitter-based selection with `<c-space>`, so incremental selection is covered.
+</Tip>
+
+## Source Code
+
+View the complete configuration in the source:
+
+`~/workspace/source/lua/leyland/plugins/treesitter.lua`

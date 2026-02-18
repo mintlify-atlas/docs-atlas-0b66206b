@@ -1,0 +1,270 @@
+---
+title: 'Harpoon'
+description: 'Lightning-fast file navigation'
+icon: 'anchor'
+---
+
+## Overview
+
+Harpoon is a file navigation plugin that lets you mark important files and jump between them instantly. Think of it as a bookmark system on steroids - instead of searching for files, you "harpoon" the ones you're actively working on and switch between them with single keystrokes.
+
+<Note>
+Harpoon is perfect for workflows where you frequently switch between a small set of files (like a model, controller, view, and test file).
+</Note>
+
+## Features
+
+- **Instant file switching** - Jump to any marked file with `<leader>1` through `<leader>9`
+- **Persistent marks** - Your harpooned files are saved automatically
+- **Quick menu** - Visual interface to view and manage marked files
+- **Minimal overhead** - No fuzzy finding required, direct access to your files
+- **Context-aware** - Each project gets its own set of marks
+
+## Configuration
+
+Harpoon 2 is configured with sensible defaults and automatic saving:
+
+```lua
+return {
+  "ThePrimeagen/harpoon",
+  branch = "harpoon2",
+  opts = {
+    menu = {
+      width = vim.api.nvim_win_get_width(0) - 4,
+    },
+    settings = {
+      save_on_toggle = true,
+    },
+  },
+}
+```
+
+### Configuration Breakdown
+
+<CardGroup cols={2}>
+  <Card title="Dynamic Width" icon="arrows-left-right">
+    Menu width adjusts to your window size (current width - 4 chars)
+  </Card>
+  
+  <Card title="Auto Save" icon="floppy-disk">
+    Marks are automatically saved when toggling the menu
+  </Card>
+  
+  <Card title="Harpoon 2" icon="rocket">
+    Uses the latest Harpoon 2 branch with improved performance
+  </Card>
+  
+  <Card title="Per-Project" icon="folder">
+    Each project maintains its own separate list of marks
+  </Card>
+</CardGroup>
+
+## Keybindings
+
+### Main Actions
+
+| Key | Action | Description |
+| --- | ------ | ----------- |
+| `<leader>H` | Add file | Harpoon the current file (add to marked list) |
+| `<leader>h` | Toggle menu | Open/close the Harpoon quick menu |
+
+### Direct File Access
+
+| Key | Action | Description |
+| --- | ------ | ----------- |
+| `<leader>1` | Jump to file 1 | Jump to first harpooned file |
+| `<leader>2` | Jump to file 2 | Jump to second harpooned file |
+| `<leader>3` | Jump to file 3 | Jump to third harpooned file |
+| `<leader>4` | Jump to file 4 | Jump to fourth harpooned file |
+| `<leader>5` | Jump to file 5 | Jump to fifth harpooned file |
+| `<leader>6` | Jump to file 6 | Jump to sixth harpooned file |
+| `<leader>7` | Jump to file 7 | Jump to seventh harpooned file |
+| `<leader>8` | Jump to file 8 | Jump to eighth harpooned file |
+| `<leader>9` | Jump to file 9 | Jump to ninth harpooned file |
+
+<Tip>
+The keybindings are generated dynamically in the configuration, allowing you to harpoon up to 9 files per project.
+</Tip>
+
+## Keybinding Implementation
+
+The keybindings are generated programmatically for efficiency:
+
+```lua
+keys = function()
+  local keys = {
+    {
+      "<leader>H",
+      function()
+        require("harpoon"):list():add()
+      end,
+      desc = "Harpoon File",
+    },
+    {
+      "<leader>h",
+      function()
+        local harpoon = require("harpoon")
+        harpoon.ui:toggle_quick_menu(harpoon:list())
+      end,
+      desc = "Harpoon Quick Menu",
+    },
+  }
+
+  -- Generate keybindings for <leader>1 through <leader>9
+  for i = 1, 9 do
+    table.insert(keys, {
+      "<leader>" .. i,
+      function()
+        require("harpoon"):list():select(i)
+      end,
+      desc = "Harpoon to File " .. i,
+    })
+  end
+  return keys
+end
+```
+
+## Usage Examples
+
+### Basic Workflow
+
+**Marking Files:**
+
+1. Open a file you work with frequently
+2. Press `<leader>H` to harpoon it
+3. Repeat for other important files (up to 9 files)
+4. Your marks are saved automatically
+
+**Switching Between Files:**
+
+1. Press `<leader>1` to jump to the first harpooned file
+2. Press `<leader>2` to jump to the second file
+3. Continue with `<leader>3`, `<leader>4`, etc.
+
+<Note>
+No need to remember what each number is - use `<leader>h` to see your list!
+</Note>
+
+### Using the Quick Menu
+
+1. Press `<leader>h` to open the Harpoon menu
+2. See all your harpooned files in order
+3. Navigate with `j` and `k`
+4. Press `<Enter>` to jump to a file
+5. Press `dd` to remove a file from the list
+6. Press `q` or `<Esc>` to close the menu
+
+### Real-World Example
+
+Imagine you're building a web feature that involves:
+
+1. A React component (`Button.tsx`) - Harpoon this as file 1
+2. Its styles (`Button.css`) - Harpoon as file 2  
+3. The test file (`Button.test.tsx`) - Harpoon as file 3
+4. The documentation (`button-api.md`) - Harpoon as file 4
+
+Now you can:
+- Press `<leader>1` to edit the component
+- Press `<leader>2` to adjust styles
+- Press `<leader>3` to update tests
+- Press `<leader>4` to update docs
+
+No fuzzy finding, no searching - instant context switching!
+
+### Organizing Your Marks
+
+<Tabs>
+  <Tab title="By Layer">
+    Organize files by architecture layer:
+    1. Route handler
+    2. Business logic
+    3. Data model
+    4. Test file
+  </Tab>
+  
+  <Tab title="By Feature">
+    Group related feature files:
+    1. Main component
+    2. Child component
+    3. Utils/helpers
+    4. Types/interfaces
+  </Tab>
+  
+  <Tab title="By Workflow">
+    Order by your typical workflow:
+    1. Entry point
+    2. First thing you modify
+    3. Second thing you modify
+    4. Output/result file
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+### Keep It Small
+
+Harpoon works best with 3-5 files. If you're harpooning 9 files, you might be better off using Telescope for some of them.
+
+<Tip>
+Use Harpoon for files you switch between constantly (multiple times per minute). Use Telescope for occasional navigation.
+</Tip>
+
+### Per-Feature Workflow
+
+When starting a new feature:
+
+1. Clear your Harpoon list (remove old files)
+2. Identify the 3-5 core files for this feature
+3. Harpoon them in logical order
+4. Build muscle memory for the number keys
+
+### Combine with Telescope
+
+1. Use Telescope (`<leader><leader>`) to find a file
+2. If you'll use it frequently, harpoon it (`<leader>H`)
+3. Access it instantly with the assigned number
+4. Remove it when done with the feature
+
+## Advanced Tips
+
+### Reordering Files
+
+1. Open the quick menu with `<leader>h`
+2. Use `dd` to delete a file from its position
+3. Navigate to where you want it
+4. (The file isn't actually deleted, you'll need to re-add it with `<leader>H`)
+
+Alternatively, just re-harpoon files in the order you want.
+
+### Project-Specific Lists
+
+Harpoon maintains separate lists for each project directory. When you switch projects, you get a fresh list. This means you can have:
+
+- Frontend project: Components you're working on
+- Backend project: API routes and models  
+- Docs project: Pages you're editing
+
+All remembered independently!
+
+## Why Harpoon?
+
+**Traditional Navigation:**
+- Open file explorer or fuzzy finder
+- Type search query
+- Navigate results
+- Select file
+- Total: 3-5 seconds
+
+**With Harpoon:**
+- Press `<leader>2`
+- Total: 0.1 seconds
+
+<Note>
+For files you access 20-30 times while working on a feature, Harpoon saves you minutes of accumulated search time and preserves your flow state.
+</Note>
+
+## Source Code
+
+View the complete configuration in the source:
+
+`~/workspace/source/lua/leyland/plugins/harpoon.lua`

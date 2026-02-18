@@ -1,97 +1,89 @@
 ---
 title: "Introduction"
-description: "Welcome to the new home for your documentation"
+description: "Welcome to nvim-luffy - A modern Neovim configuration for pirates who dream of becoming the Pirate King"
 ---
 
-## Setting up
+# Welcome to nvim-luffy
 
-Get your documentation site up and running in minutes.
+**Maybe the one piece was the commits we made along the way.**
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+nvim-luffy is a modern, feature-rich Neovim configuration built for developers who want a powerful IDE experience without sacrificing speed or simplicity. Named after the legendary pirate, this configuration helps you navigate the seas of code with ease.
 
-## Make it yours
+## Key Features
 
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Plugin Management" icon="box">
+    Powered by **lazy.nvim** for fast startup times and lazy loading. Plugins are organized and loaded only when needed.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  
+  <Card title="LSP Support" icon="code">
+    Full Language Server Protocol support with **Mason** for easy LSP installation and management. Pre-configured for TypeScript, Python, Lua, and more.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  
+  <Card title="Fuzzy Finding" icon="magnifying-glass">
+    Lightning-fast file and text search with **Telescope** and FZF integration. Find anything in your codebase instantly.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  
+  <Card title="File Navigation" icon="anchor">
+    **Harpoon 2** integration for quick navigation between your most important files. Mark files and jump between them with single keystrokes.
   </Card>
-</Columns>
+  
+  <Card title="Git Integration" icon="git">
+    Seamless Git workflow with **Neogit** and **Diffview**. Stage, commit, and review changes without leaving Neovim.
+  </Card>
+  
+  <Card title="Smart Completion" icon="sparkles">
+    Intelligent auto-completion with **nvim-cmp**, LuaSnip, and LSP integration. Context-aware suggestions as you type.
+  </Card>
+  
+  <Card title="Syntax Highlighting" icon="palette">
+    Advanced syntax highlighting with **Treesitter**. Better code understanding and navigation.
+  </Card>
+  
+  <Card title="Beautiful Themes" icon="brush">
+    Multiple colorschemes included: Catppuccin, Tokyo Night, Rose Pine, Bamboo, Modus, and OneDark.
+  </Card>
+</CardGroup>
 
-## Create beautiful pages
+## Why nvim-luffy?
 
-Everything you need to create world-class documentation.
+<Note>
+  This configuration is designed to be both powerful and approachable. Whether you're new to Neovim or a seasoned veteran, nvim-luffy provides a solid foundation that's easy to customize.
+</Note>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+- **Fast Startup**: Lazy loading ensures Neovim starts in milliseconds
+- **Well-Organized**: Clear structure with plugins organized by category
+- **Extensible**: Easy to add your own plugins and customizations
+- **Modern**: Uses the latest Neovim features and popular plugins
+- **Complete**: Everything you need for a productive development environment
 
-## Need inspiration?
+## Quick Links
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={3}>
+  <Card title="Installation" icon="download" href="/installation">
+    Get started with nvim-luffy in minutes
+  </Card>
+  
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Learn the essential keybindings and features
+  </Card>
+  
+  <Card title="Configuration" icon="gear" href="/configuration">
+    Customize nvim-luffy to your liking
+  </Card>
+</CardGroup>
+
+## What's Inside
+
+The configuration includes carefully selected plugins that work together seamlessly:
+
+- **Core Editor**: Enhanced options, custom keymaps, and autocommands
+- **UI**: Alpha dashboard, custom winbar, minimal statusline
+- **Navigation**: Telescope, Harpoon, nvim-tree, Flash for quick jumps
+- **Development**: LSP, Mason, auto-completion, Treesitter, formatting
+- **Git**: Neogit, Diffview for comprehensive Git workflow
+- **Utilities**: Autopairs, Todo comments, Trouble for diagnostics
+
+<Tip>
+  Ready to start your adventure? Head over to the [Installation](/installation) guide to set up nvim-luffy on your machine.
+</Tip>

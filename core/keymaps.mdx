@@ -1,0 +1,306 @@
+---
+title: Keymaps
+description: Keybindings and mappings configuration in nvim-luffy
+---
+
+# Keymaps
+
+This page documents the custom keybindings configured in nvim-luffy. The configuration emphasizes minimal, essential mappings that enhance the default Vim experience.
+
+## Overview
+
+Keymaps are defined in `lua/leyland/core/keymaps.lua` using Neovim's `vim.keymap` API. The configuration philosophy is **minimal and purposeful** - only mapping keys that provide clear value.
+
+## Leader Key
+
+```lua
+vim.g.mapleader = " "
+```
+
+<Note>
+  The leader key is set to **Space**. This is one of the most popular leader key choices because:
+  - Easy to reach with either thumb
+  - Doesn't conflict with default Vim motions
+  - Works well with both hands on home row
+  - Creates memorable, spacebar-based command sequences
+</Note>
+
+<Tip>
+  The leader key must be set before any mappings that use it. This is why it's the first line in the keymaps configuration.
+</Tip>
+
+## Window Management
+
+All window management keymaps use the `<leader>` prefix for consistency and memorability.
+
+### Window Splitting
+
+```lua
+keymap.set("n", "<leader>|", "<C-w>v", { desc = "Split window vertically" })
+keymap.set("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" })
+```
+
+<Tabs>
+  <Tab title="Usage">
+    | Keymap | Mode | Action | Mnemonic |
+    |--------|------|--------|----------|
+    | `<Space>\|` | Normal | Split vertically | Visual pipe symbol `\|` represents vertical split |
+    | `<Space>sh` | Normal | Split horizontally | **S**plit **H**orizontal |
+  </Tab>
+  
+  <Tab title="Behavior">
+    **Vertical Split** (`<leader>|`):
+    ```
+    Before              After
+    ┌──────────────┐    ┌───────┬──────┐
+    │              │    │       │      │
+    │   Current    │ → │ Left  │ Right│
+    │              │    │       │      │
+    └──────────────┘    └───────┴──────┘
+    ```
+    
+    **Horizontal Split** (`<leader>sh`):
+    ```
+    Before              After
+    ┌──────────────┐    ┌──────────────┐
+    │              │    │     Top      │
+    │   Current    │ → ├──────────────┤
+    │              │    │    Bottom    │
+    └──────────────┘    └──────────────┘
+    ```
+  </Tab>
+  
+  <Tab title="Comparison">
+    These mappings simplify the default Vim window commands:
+    
+    | Default | Custom | Saved Keystrokes |
+    |---------|--------|------------------|
+    | `<C-w>v` | `<Space>\|` | Easier to remember, visual mnemonic |
+    | `<C-w>s` | `<Space>sh` | More intuitive, word-based |
+    
+    The default commands still work - these are additions, not replacements.
+  </Tab>
+</Tabs>
+
+<Note>
+  Combined with the `splitright` and `splitbelow` options, these splits will:
+  - Open vertical splits to the **right**
+  - Open horizontal splits **below**
+</Note>
+
+## Buffer Management
+
+Buffer keymaps provide quick ways to close buffers without closing windows.
+
+```lua
+keymap.set("n", "<leader>bd", "<cmd>bd<CR>", { desc = "Close buffer" })
+keymap.set("n", "<leader>ba", "<cmd>%bd<CR>", { desc = "Close all buffers" })
+```
+
+<Tabs>
+  <Tab title="Usage">
+    | Keymap | Mode | Action | Mnemonic |
+    |--------|------|--------|----------|
+    | `<Space>bd` | Normal | Close current buffer | **B**uffer **D**elete |
+    | `<Space>ba` | Normal | Close all buffers | **B**uffer **A**ll (delete) |
+  </Tab>
+  
+  <Tab title="Buffer vs Window">
+    **Important distinction**:
+    - `<leader>bd` - Closes the **buffer** (the file), but keeps the window open
+    - `:q` or `<C-w>q` - Closes the **window**, which may also close the buffer
+    
+    **Example workflow**:
+    ```
+    1. Open file.lua (buffer 1)
+    2. <Space>| to split vertically
+    3. Open config.lua (buffer 2)
+    4. <Space>bd to close config.lua
+    5. Window remains, shows file.lua (buffer 1)
+    ```
+  </Tab>
+  
+  <Tab title="Close All Buffers">
+    `<leader>ba` runs `%bd` which means:
+    - `%` - Range: all lines/buffers
+    - `bd` - Buffer delete command
+    
+    <Note>
+      **Warning**: `<Space>ba` will close ALL buffers including in other tabs and windows. This is a destructive operation. Use with caution.
+    </Note>
+    
+    **When to use**:
+    - Starting fresh on a new task
+    - Cleaning up many open files
+    - Resetting your workspace
+  </Tab>
+</Tabs>
+
+<Accordion title="Using <cmd> vs :">
+  ```lua
+  "<cmd>bd<CR>"  -- Recommended
+  ":bd<CR>"      -- Also works
+  ```
+  
+  The `<cmd>` pseudo-key is preferred because:
+  - **No mode change**: Executes command without entering Command-line mode
+  - **Cleaner**: Doesn't show the command in the command line
+  - **Faster**: Slightly more performant
+  - **Safer**: Doesn't affect command-line history
+  
+  Both accomplish the same result, but `<cmd>` is the modern best practice.
+</Accordion>
+
+## Commented Keymaps
+
+The configuration includes commented-out keymaps that are available but not enabled by default:
+
+### Insert Mode Escape
+
+```lua
+-- keymap.set("i", "jk", "<ESC>", {desc = "Exit Insert mode with jk"})
+```
+
+<Accordion title="Why jk for Escape?">
+  This popular mapping lets you press `j` then `k` quickly in insert mode to return to normal mode.
+  
+  **Advantages**:
+  - Keeps hands on home row (no reaching for `<Esc>` key)
+  - Fast to type
+  - `jk` is rare in natural text, reducing false triggers
+  
+  **Why commented out?**
+  - Personal preference - some users prefer `<Esc>`, `<C-c>`, or `<C-[>`
+  - Can interfere if you actually need to type "jk" in insert mode
+  - Easy to enable by uncommenting if desired
+  
+  **Alternatives**:
+  - `jk` - Popular, balanced
+  - `jj` - Single key, but can trigger accidentally
+  - `kj` - Less common than `jk`
+  - `<C-c>` - Built-in Vim alternative (no mapping needed)
+</Accordion>
+
+### Clear Search Highlights
+
+```lua
+-- keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
+```
+
+<Accordion title="Why This Is Commented">
+  This mapping would clear search highlights with `<Space>nh`.
+  
+  **Why commented out?**
+  
+  This functionality is **handled automatically** by an autocommand (see `autocommands.lua`). The `CursorMoved` autocommand clears highlights automatically when the cursor moves and there are no more matches.
+  
+  **Manual alternatives** (no mapping needed):
+  - `:nohl` or `:nohlsearch` - Clear highlights
+  - `<C-l>` - Redraw screen (often clears highlights as side effect)
+  - Search for something that doesn't exist: `/asdfasdf`
+  
+  **If you want manual control**:
+  
+  Uncomment this line and disable the `CursorMoved` autocommand in `autocommands.lua`.
+</Accordion>
+
+## Keymap Descriptions
+
+All keymaps use the `desc` (description) option:
+
+```lua
+keymap.set("n", "<leader>bd", "<cmd>bd<CR>", { desc = "Close buffer" })
+--                                             ^^^^^^^^^^^^^^^^^^^^^^^^
+--                                             Description for which-key/help
+```
+
+<Tip>
+  The `desc` field serves multiple purposes:
+  - Appears in plugins like **which-key** (shows available keymaps)
+  - Searchable with `:Telescope keymaps` (if you use Telescope)
+  - Self-documenting code
+  - Helps with `:map` output
+  
+  Always include descriptive `desc` values for custom keymaps.
+</Tip>
+
+## Philosophy: Minimal Mappings
+
+<Note>
+  nvim-luffy takes a **minimal approach** to keymaps. Notice what's NOT mapped:
+  
+  - No navigation overrides (hjkl work as default)
+  - No insert mode shortcuts (except commented jk)
+  - No text object modifications
+  - No operator-pending custom motions
+  - No complex macro-like sequences
+  
+  **Why minimal?**
+  - Vim's defaults are well-designed
+  - Less cognitive overhead
+  - Easier to use any other Vim/Neovim installation
+  - Plugins add their own keymaps (telescope, which-key, etc.)
+  - Focus on essential productivity gains only
+</Note>
+
+## Complete Keymap Reference
+
+| Keymap | Mode | Action | File |
+|--------|------|--------|------|
+| `<Space>` | - | Leader key | `keymaps.lua:1` |
+| `<Space>\|` | Normal | Split window vertically | `keymaps.lua:11` |
+| `<Space>sh` | Normal | Split window horizontally | `keymaps.lua:12` |
+| `<Space>bd` | Normal | Close buffer | `keymaps.lua:14` |
+| `<Space>ba` | Normal | Close all buffers | `keymaps.lua:15` |
+
+## Navigation Between Windows
+
+<Accordion title="Default Window Navigation (No Custom Maps)">
+  nvim-luffy doesn't override default window navigation. Use these built-in commands:
+  
+  | Command | Action |
+  |---------|--------|
+  | `<C-w>h` | Move to left window |
+  | `<C-w>j` | Move to window below |
+  | `<C-w>k` | Move to window above |
+  | `<C-w>l` | Move to right window |
+  | `<C-w>w` | Cycle through windows |
+  | `<C-w>q` | Close current window |
+  | `<C-w>=` | Equal size all windows |
+  | `<C-w>_` | Maximize height |
+  | `<C-w>\|` | Maximize width |
+  
+  Many users add custom mappings like `<C-h/j/k/l>` for easier navigation, but this config keeps defaults.
+</Accordion>
+
+## Extending Keymaps
+
+<Tip>
+  To add your own keymaps, edit `lua/leyland/core/keymaps.lua` and follow the existing pattern:
+  
+  ```lua
+  keymap.set("n", "<leader>key", "<cmd>command<CR>", { desc = "Description" })
+  ```
+  
+  **Example - Add save shortcut**:
+  ```lua
+  keymap.set("n", "<leader>w", "<cmd>w<CR>", { desc = "Save file" })
+  ```
+  
+  **Example - Format code**:
+  ```lua
+  keymap.set("n", "<leader>fm", vim.lsp.buf.format, { desc = "Format buffer" })
+  ```
+</Tip>
+
+## Summary
+
+The keymaps configuration in nvim-luffy is intentionally minimal:
+
+1. **Leader key**: Space for easy access
+2. **Window splits**: Visual (`|`) and intuitive (`sh`) mappings
+3. **Buffer management**: Quick close current (`bd`) or all (`ba`) buffers
+4. **Descriptions**: All mappings include `desc` for discoverability
+5. **Commented options**: Available alternatives for escape and highlight clearing
+
+This approach prioritizes Vim's battle-tested defaults while adding a few high-value conveniences for window and buffer management.

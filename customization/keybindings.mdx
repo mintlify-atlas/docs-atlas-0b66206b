@@ -1,0 +1,506 @@
+---
+title: Customizing Keybindings
+description: Learn how to customize and add keybindings in nvim-luffy
+---
+
+## Overview
+
+nvim-luffy uses Neovim's built-in keymap API for defining keybindings. The leader key is set to `<Space>`, and keybindings are organized throughout the configuration for easy customization.
+
+## Understanding Keybindings
+
+### Leader Key
+
+The leader key is set in `lua/leyland/core/keymaps.lua`:
+
+```lua
+vim.g.mapleader = " "  -- Space is the leader key
+```
+
+<Tip>
+The leader key acts as a prefix for custom keybindings, making them easier to remember and avoiding conflicts with default Neovim mappings.
+</Tip>
+
+### Keymap API
+
+The basic syntax for creating keybindings:
+
+```lua
+vim.keymap.set(mode, lhs, rhs, opts)
+```
+
+- **mode**: The mode(s) where the mapping applies ("n", "i", "v", etc.)
+- **lhs**: The key sequence to trigger the mapping (left-hand side)
+- **rhs**: The action to perform (right-hand side)
+- **opts**: Optional configuration table
+
+## Core Keybindings
+
+Edit `lua/leyland/core/keymaps.lua` to add or modify core keybindings:
+
+```lua lua/leyland/core/keymaps.lua
+vim.g.mapleader = " "
+local keymap = vim.keymap
+
+-- Window management
+keymap.set("n", "<leader>|", "<C-w>v", { desc = "Split window vertically" })
+keymap.set("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" })
+
+-- Buffer management
+keymap.set("n", "<leader>bd", "<cmd>bd<CR>", { desc = "Close buffer" })
+keymap.set("n", "<leader>ba", "<cmd>%bd<CR>", { desc = "Close all buffers" })
+```
+
+## Adding Custom Keybindings
+
+### In Core Keymaps File
+
+Add your custom keybindings to `lua/leyland/core/keymaps.lua`:
+
+<CodeGroup>
+
+```lua Basic Mapping
+local keymap = vim.keymap
+
+-- Quick save
+keymap.set("n", "<leader>w", "<cmd>w<CR>", { desc = "Save file" })
+
+-- Quick quit
+keymap.set("n", "<leader>q", "<cmd>q<CR>", { desc = "Quit" })
+
+-- Clear search highlights
+keymap.set("n", "<leader>nh", "<cmd>nohl<CR>", { desc = "Clear search highlights" })
+```
+
+```lua Visual Mode
+-- Move selected lines up/down
+keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
+keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
+
+-- Stay in indent mode
+keymap.set("v", "<", "<gv", { desc = "Indent left" })
+keymap.set("v", ">", ">gv", { desc = "Indent right" })
+
+-- Paste without yanking
+keymap.set("v", "p", '"_dP', { desc = "Paste without yanking" })
+```
+
+```lua Insert Mode
+-- Exit insert mode with jk
+keymap.set("i", "jk", "<ESC>", { desc = "Exit insert mode" })
+
+-- Move cursor in insert mode
+keymap.set("i", "<C-h>", "<Left>", { desc = "Move left" })
+keymap.set("i", "<C-l>", "<Right>", { desc = "Move right" })
+keymap.set("i", "<C-j>", "<Down>", { desc = "Move down" })
+keymap.set("i", "<C-k>", "<Up>", { desc = "Move up" })
+```
+
+```lua Multiple Modes
+-- Copy to system clipboard
+keymap.set({ "n", "v" }, "<leader>y", '"+y', { desc = "Copy to clipboard" })
+
+-- Paste from system clipboard
+keymap.set({ "n", "v" }, "<leader>p", '"+p', { desc = "Paste from clipboard" })
+
+-- Delete without yanking
+keymap.set({ "n", "v" }, "<leader>d", '"_d', { desc = "Delete without yanking" })
+```
+
+</CodeGroup>
+
+### In Plugin Files
+
+Plugin-specific keybindings should be defined in their respective plugin files:
+
+```lua lua/leyland/plugins/telescope.lua
+return {
+  "nvim-telescope/telescope.nvim",
+  config = function()
+    local telescope = require("telescope")
+    telescope.setup({ --[[ config ]] })
+    
+    local keymap = vim.keymap
+    
+    -- Telescope keybindings
+    keymap.set("n", "<leader><leader>", "<cmd>Telescope find_files<cr>", 
+      { desc = "Fuzzy find files in cwd" })
+    keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", 
+      { desc = "Fuzzy find recent files" })
+    keymap.set("n", "<leader>/", "<cmd>Telescope live_grep<cr>", 
+      { desc = "Find string in cwd" })
+    keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<cr>", 
+      { desc = "List open buffers" })
+  end,
+}
+```
+
+## Lazy-Loaded Keybindings
+
+For better performance, define keybindings that load plugins on-demand:
+
+```lua lua/leyland/plugins/harpoon.lua
+return {
+  "ThePrimeagen/harpoon",
+  branch = "harpoon2",
+  keys = {
+    {
+      "<leader>a",
+      function()
+        require("harpoon"):list():add()
+      end,
+      desc = "Harpoon add file",
+    },
+    {
+      "<leader>h",
+      function()
+        local harpoon = require("harpoon")
+        harpoon.ui:toggle_quick_menu(harpoon:list())
+      end,
+      desc = "Harpoon menu",
+    },
+    {
+      "<C-h>",
+      function()
+        require("harpoon"):list():select(1)
+      end,
+      desc = "Harpoon file 1",
+    },
+  },
+}
+```
+
+<Note>
+Plugins with `keys` defined will only load when those keys are pressed, improving startup time.
+</Note>
+
+## Mode Reference
+
+| Mode | Description | Shorthand |
+|------|-------------|----------|
+| Normal | Normal mode | `"n"` |
+| Insert | Insert mode | `"i"` |
+| Visual | Visual and Select mode | `"v"` |
+| Visual | Visual mode only | `"x"` |
+| Select | Select mode | `"s"` |
+| Command | Command-line mode | `"c"` |
+| Operator-pending | Operator pending mode | `"o"` |
+| Terminal | Terminal mode | `"t"` |
+| All | All modes | `""` |
+
+## Keymap Options
+
+Common options for keybindings:
+
+```lua
+keymap.set("n", "<leader>w", "<cmd>w<CR>", {
+  desc = "Save file",           -- Description (shown in which-key)
+  silent = true,                -- Don't show command in command line
+  noremap = true,               -- Non-recursive mapping (default: true)
+  expr = false,                 -- Evaluate rhs as expression
+  buffer = nil,                 -- Buffer-local mapping (number or true)
+  nowait = false,               -- Don't wait for more characters
+})
+```
+
+### Buffer-Local Keybindings
+
+Create keybindings that only work in specific buffers:
+
+```lua
+-- In LSP config
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local keymap = vim.keymap
+    local opts = { buffer = args.buf }
+    
+    keymap.set("n", "gd", vim.lsp.buf.definition, 
+      vim.tbl_extend("force", opts, { desc = "Go to definition" }))
+    keymap.set("n", "K", vim.lsp.buf.hover, 
+      vim.tbl_extend("force", opts, { desc = "Hover documentation" }))
+  end,
+})
+```
+
+## Common Keybinding Patterns
+
+### Window Navigation
+
+```lua
+-- Navigate between windows
+keymap.set("n", "<C-h>", "<C-w>h", { desc = "Go to left window" })
+keymap.set("n", "<C-j>", "<C-w>j", { desc = "Go to lower window" })
+keymap.set("n", "<C-k>", "<C-w>k", { desc = "Go to upper window" })
+keymap.set("n", "<C-l>", "<C-w>l", { desc = "Go to right window" })
+
+-- Resize windows
+keymap.set("n", "<C-Up>", "<cmd>resize +2<CR>", { desc = "Increase window height" })
+keymap.set("n", "<C-Down>", "<cmd>resize -2<CR>", { desc = "Decrease window height" })
+keymap.set("n", "<C-Left>", "<cmd>vertical resize -2<CR>", { desc = "Decrease window width" })
+keymap.set("n", "<C-Right>", "<cmd>vertical resize +2<CR>", { desc = "Increase window width" })
+```
+
+### Buffer Navigation
+
+```lua
+-- Navigate between buffers
+keymap.set("n", "<S-l>", "<cmd>bnext<CR>", { desc = "Next buffer" })
+keymap.set("n", "<S-h>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
+
+-- Close buffers
+keymap.set("n", "<leader>bd", "<cmd>bdelete<CR>", { desc = "Delete buffer" })
+keymap.set("n", "<leader>bo", "<cmd>%bd|e#|bd#<CR>", { desc = "Delete other buffers" })
+```
+
+### Tab Navigation
+
+```lua
+-- Tab management
+keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "New tab" })
+keymap.set("n", "<leader>tc", "<cmd>tabclose<CR>", { desc = "Close tab" })
+keymap.set("n", "<leader>to", "<cmd>tabonly<CR>", { desc = "Close other tabs" })
+keymap.set("n", "<Tab>", "<cmd>tabnext<CR>", { desc = "Next tab" })
+keymap.set("n", "<S-Tab>", "<cmd>tabprevious<CR>", { desc = "Previous tab" })
+```
+
+### Text Manipulation
+
+```lua
+-- Better indenting
+keymap.set("v", "<", "<gv", { desc = "Indent left" })
+keymap.set("v", ">", ">gv", { desc = "Indent right" })
+
+-- Move text up and down
+keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move text down" })
+keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move text up" })
+
+-- Duplicate lines
+keymap.set("n", "<leader>ld", 'yyp', { desc = "Duplicate line" })
+keymap.set("v", "<leader>ld", 'y`>p', { desc = "Duplicate selection" })
+
+-- Join lines without moving cursor
+keymap.set("n", "J", "mzJ`z", { desc = "Join lines" })
+```
+
+### Search and Replace
+
+```lua
+-- Keep cursor centered during search
+keymap.set("n", "n", "nzzzv", { desc = "Next search result" })
+keymap.set("n", "N", "Nzzzv", { desc = "Previous search result" })
+
+-- Replace word under cursor
+keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], 
+  { desc = "Replace word under cursor" })
+```
+
+## Real-World Examples
+
+### Git Integration Keybindings
+
+```lua lua/leyland/plugins/neogit.lua
+return {
+  "NeogitOrg/neogit",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    "sindrets/diffview.nvim",
+  },
+  keys = {
+    { "<leader>gs", "<cmd>Neogit<CR>", desc = "Git status" },
+    { "<leader>gc", "<cmd>Neogit commit<CR>", desc = "Git commit" },
+    { "<leader>gp", "<cmd>Neogit push<CR>", desc = "Git push" },
+    { "<leader>gl", "<cmd>Neogit log<CR>", desc = "Git log" },
+    { "<leader>gb", "<cmd>Telescope git_branches<CR>", desc = "Git branches" },
+  },
+}
+```
+
+### Code Navigation Keybindings
+
+```lua lua/leyland/plugins/trouble.lua
+return {
+  "folke/trouble.nvim",
+  cmd = "Trouble",
+  keys = {
+    { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
+    { "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
+    { "<leader>cs", "<cmd>Trouble symbols toggle focus=false<cr>", desc = "Symbols (Trouble)" },
+    { "<leader>cl", "<cmd>Trouble lsp toggle focus=false win.position=right<cr>", desc = "LSP Definitions / references / ... (Trouble)" },
+    { "<leader>xL", "<cmd>Trouble loclist toggle<cr>", desc = "Location List (Trouble)" },
+    { "<leader>xQ", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix List (Trouble)" },
+  },
+}
+```
+
+### Testing Keybindings
+
+```lua lua/leyland/plugins/neotest.lua
+return {
+  "nvim-neotest/neotest",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    "nvim-neotest/neotest-python",
+    "nvim-neotest/neotest-jest",
+  },
+  keys = {
+    { "<leader>tt", function() require("neotest").run.run() end, desc = "Run nearest test" },
+    { "<leader>tf", function() require("neotest").run.run(vim.fn.expand("%")) end, desc = "Run current file" },
+    { "<leader>td", function() require("neotest").run.run({strategy = "dap"}) end, desc = "Debug nearest test" },
+    { "<leader>ts", function() require("neotest").summary.toggle() end, desc = "Toggle test summary" },
+    { "<leader>to", function() require("neotest").output.open({ enter = true }) end, desc = "Show test output" },
+  },
+}
+```
+
+## Discovering Keybindings
+
+### View All Keymaps
+
+Use Telescope to search through all keybindings:
+
+```vim
+:Telescope keymaps
+```
+
+### Check Specific Keymap
+
+See what a key is mapped to:
+
+```vim
+:verbose map <leader>ff
+```
+
+### Check for Conflicts
+
+Before adding a keybinding, check if it's already in use:
+
+```vim
+:map <leader>w
+```
+
+## Unmapping Keys
+
+Remove existing keybindings:
+
+```lua
+-- Unmap in specific mode
+vim.keymap.del("n", "<leader>w")
+
+-- Unmap in multiple modes
+vim.keymap.del({ "n", "v" }, "<leader>w")
+```
+
+## Best Practices
+
+<Steps>
+
+<Step title="Use descriptive names">
+Always include a `desc` option to make keybindings discoverable:
+```lua
+keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>", 
+  { desc = "Find files" })  -- Good
+keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>")  -- Bad
+```
+</Step>
+
+<Step title="Group related keybindings">
+Use consistent prefixes for related actions:
+- `<leader>f` for file operations
+- `<leader>g` for git operations
+- `<leader>b` for buffer operations
+- `<leader>t` for test/toggle operations
+</Step>
+
+<Step title="Prefer functions over commands">
+For complex operations, use Lua functions:
+```lua
+-- Good
+keymap.set("n", "<leader>w", function()
+  if vim.bo.modified then
+    vim.cmd("write")
+    print("File saved!")
+  else
+    print("No changes to save")
+  end
+end, { desc = "Smart save" })
+
+-- Less flexible
+keymap.set("n", "<leader>w", "<cmd>w<CR>", { desc = "Save" })
+```
+</Step>
+
+<Step title="Use buffer-local for LSP">
+LSP keybindings should be buffer-local:
+```lua
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local opts = { buffer = args.buf, desc = "Go to definition" }
+    vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+  end,
+})
+```
+</Step>
+
+<Step title="Lazy-load plugins with keys">
+Define keybindings in the `keys` table to load plugins on-demand:
+```lua
+return {
+  "plugin/name",
+  keys = {
+    { "<leader>p", "<cmd>PluginCommand<cr>", desc = "Plugin command" },
+  },
+}
+```
+</Step>
+
+</Steps>
+
+<Warning>
+Avoid overriding essential Neovim keybindings like `hjkl`, `y`, `d`, `p`, unless you have a good reason.
+</Warning>
+
+## Troubleshooting
+
+### Keybinding Not Working
+
+1. Check if the key is already mapped:
+```vim
+:verbose map <your-key>
+```
+
+2. Verify the mode is correct:
+```lua
+-- Make sure you're in the right mode
+keymap.set("n", "<leader>w", ...) -- Normal mode
+keymap.set("i", "<C-s>", ...)     -- Insert mode
+```
+
+3. Check for typos in the command:
+```vim
+:command YourCommand  -- Verify command exists
+```
+
+### Plugin Keybinding Not Loading
+
+If plugin keybindings aren't working:
+
+1. Ensure the plugin is loaded:
+```vim
+:Lazy
+```
+
+2. Check if keybindings are being set in the config:
+```vim
+:verbose map <plugin-key>
+```
+
+3. Try manually loading the plugin:
+```vim
+:Lazy load plugin-name
+```
+
+## Next Steps
+
+- Learn how to [add plugins](/customization/adding-plugins)
+- Configure [LSP servers](/customization/lsp-servers) with custom keybindings
+- Explore [plugin keybindings](/plugins/overview) for available shortcuts
